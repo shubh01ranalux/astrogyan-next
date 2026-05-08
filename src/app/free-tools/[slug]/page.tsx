@@ -4,6 +4,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PageHero from "@/components/layout/PageHero";
 import { getFreeToolBySlug } from "@/lib/free-tools";
+import { getSiteSettings } from "@/lib/site-settings";
 
 type PageProps = {
   params: Promise<{
@@ -11,26 +12,39 @@ type PageProps = {
   }>;
 };
 
-
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const tool = await getFreeToolBySlug(slug);
+  const settings = await getSiteSettings();
 
   if (!tool) {
     return {
-      title: "Free Tool Not Found | AstroGyan",
+      title: `Free Tool Not Found | ${settings.site_name || "AstroGyan"}`,
     };
   }
 
+  const siteName = settings.site_name || "AstroGyan";
+  const title = `${tool.title} | Free Astrology Tool | ${siteName}`;
+  const description = tool.description;
+
   return {
-    title: `${tool.title} | Free Astrology Tool | AstroGyan`,
-    description: tool.description,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: settings.default_og_image ? [settings.default_og_image] : [],
+    },
   };
 }
 
 export default async function FreeToolDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const tool = await getFreeToolBySlug(slug);
+
+  const [tool, settings] = await Promise.all([
+    getFreeToolBySlug(slug),
+    getSiteSettings(),
+  ]);
 
   if (!tool) notFound();
 
@@ -39,7 +53,10 @@ export default async function FreeToolDetailPage({ params }: PageProps) {
 
   return (
     <>
-      <Navbar />
+      <Navbar
+        logo={settings.site_logo}
+        title={settings.site_name || "Astrogyan"}
+      />
 
       <main>
         <PageHero
@@ -54,7 +71,15 @@ export default async function FreeToolDetailPage({ params }: PageProps) {
               {tool.icon || "✦"}
             </div>
 
-            <span className="inline-flex rounded-full bg-[#D8A7B1]/25 px-4 py-2 text-sm font-medium text-[#5C3A57]">
+            <span
+              className={`inline-flex rounded-full px-4 py-2 text-sm font-medium ${
+                isLive
+                  ? "bg-emerald-100 text-emerald-700"
+                  : isBeta
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-[#D8A7B1]/25 text-[#5C3A57]"
+              }`}
+            >
               {tool.status}
             </span>
 
@@ -65,7 +90,8 @@ export default async function FreeToolDetailPage({ params }: PageProps) {
                 </h2>
 
                 <p className="mx-auto mt-4 max-w-2xl leading-7 text-[#6F5B69]">
-                  You can open this AstroGyan free tool and start using it now.
+                  You can open this {settings.site_name || "AstroGyan"} free
+                  tool and start using it now.
                 </p>
 
                 <Link
@@ -100,8 +126,8 @@ export default async function FreeToolDetailPage({ params }: PageProps) {
                 </h2>
 
                 <p className="mx-auto mt-4 max-w-2xl leading-7 text-[#6F5B69]">
-                  This AstroGyan tool is currently being prepared. It will be
-                  available soon.
+                  This {settings.site_name || "AstroGyan"} tool is currently
+                  being prepared. It will be available soon.
                 </p>
 
                 <Link
@@ -116,7 +142,11 @@ export default async function FreeToolDetailPage({ params }: PageProps) {
         </section>
       </main>
 
-      <Footer />
+      <Footer
+        logo={settings.site_logo}
+        title={settings.site_name || "Astrogyan"}
+        subtitle={settings.site_tagline || "Ancient Vedic Wisdom for Modern Life"}
+      />
     </>
   );
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Button from "@/components/ui/Button";
 
 type CTASectionProps = {
@@ -5,6 +6,7 @@ type CTASectionProps = {
   title?: string;
   description?: string;
   buttonText?: string;
+  buttonHref?: string;
   backgroundImage?: string;
 };
 
@@ -13,6 +15,7 @@ export default function CTASection({
   title = "Find clarity before your next important decision.",
   description = "Book a consultation and receive personalized Vedic guidance based on your birth details and life questions.",
   buttonText = "Book Consultation",
+  buttonHref = "/book",
   backgroundImage = "",
 }: CTASectionProps) {
   return (
@@ -42,7 +45,9 @@ export default function CTASection({
         </p>
 
         <div className="mt-9">
-          <Button>{buttonText}</Button>
+          <Link href={buttonHref}>
+            <Button>{buttonText}</Button>
+          </Link>
         </div>
       </div>
     </section>

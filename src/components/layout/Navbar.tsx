@@ -5,17 +5,24 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu } from "lucide-react";
 import MobileMenu from "./MobileMenu";
+import type { NavigationItem } from "@/lib/navigation";
 
 type NavbarProps = {
   logo?: string;
   title?: string;
+  navigationItems?: NavigationItem[];
 };
 
 export default function Navbar({
   logo = "",
   title = "Astrogyan",
+  navigationItems = [],
 }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  const navbarItems = navigationItems.filter(
+    (item) => item.location === "navbar" || item.location === "both"
+  );
 
   return (
     <>
@@ -37,9 +44,21 @@ export default function Navbar({
             </span>
           </Link>
 
+          <div className="hidden items-center gap-6 lg:flex">
+            {navbarItems.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className="text-sm font-medium text-[#5C3A57] transition hover:text-[#B784A7]"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+
           <button
             onClick={() => setIsOpen(true)}
-            className="rounded-full border border-[#E6C89C]/50 p-2 text-[#5C3A57] transition hover:bg-[#E6C89C]/30"
+            className="rounded-full border border-[#E6C89C]/50 p-2 text-[#5C3A57] transition hover:bg-[#E6C89C]/30 lg:hidden"
             aria-label="Open menu"
           >
             <Menu size={22} />
@@ -47,7 +66,11 @@ export default function Navbar({
         </nav>
       </header>
 
-      <MobileMenu isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      <MobileMenu
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        navigationItems={navbarItems}
+      />
     </>
   );
 }

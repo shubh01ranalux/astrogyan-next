@@ -9,13 +9,15 @@ import TestimonialsSection from "@/sections/TestimonialsSection";
 import CTASection from "@/sections/CTASection";
 import { getSiteContent } from "@/lib/site-content";
 import { getHomepageSections } from "@/lib/homepage-sections";
+import { getSiteSettings } from "@/lib/site-settings";
+import { getNavigationItems } from "@/lib/navigation";
 
 export default async function Home() {
   const content = await getSiteContent();
   const sections = await getHomepageSections();
-
+  const settings = await getSiteSettings();
+  const navigationItems = await getNavigationItems();
   const enabledSections = sections.filter((section) => section.is_enabled);
-
   const sectionComponents: Record<string, React.ReactNode> = {
     hero: (
       <HeroSection
@@ -110,8 +112,8 @@ export default async function Home() {
   return (
     <main className="relative min-h-screen overflow-x-hidden">
       <Navbar
-        logo={content.site_logo}
-        title={content.footer_title || "Astrogyan"}
+        logo={settings.site_logo || content.site_logo}
+        title={settings.site_name || content.footer_title || "Astrogyan"}
       />
 
       {enabledSections.map((section) => (
@@ -121,12 +123,15 @@ export default async function Home() {
       ))}
 
       <Footer
-        logo={content.footer_logo || content.site_logo}
-        title={content.footer_title || "Astrogyan"}
-        subtitle={
-          content.footer_subtitle || "Ancient Vedic Wisdom for Modern Life"
-        }
-      />
+  logo={settings.site_logo || content.footer_logo || content.site_logo}
+  title={settings.site_name || content.footer_title || "Astrogyan"}
+  subtitle={
+    settings.site_tagline ||
+    content.footer_subtitle ||
+    "Ancient Vedic Wisdom for Modern Life"
+  }
+  navigationItems={navigationItems}
+/>
     </main>
   );
 }

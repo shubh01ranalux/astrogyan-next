@@ -1,18 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
-import { navigationItems } from "@/data/navigation";
+import type { NavigationItem } from "@/lib/navigation";
 
 type FooterProps = {
   title?: string;
   subtitle?: string;
   logo?: string;
+  navigationItems?: NavigationItem[];
 };
 
 export default function Footer({
   title = "Astrogyan",
   subtitle = "Ancient Vedic Wisdom for Modern Life",
   logo = "",
+  navigationItems = [],
 }: FooterProps) {
+  const footerItems = navigationItems.filter(
+    (item) => item.location === "footer" || item.location === "both"
+  );
+
   return (
     <footer className="relative border-t border-[#E6C89C]/40 px-6 py-10 sm:px-10">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
@@ -38,8 +44,8 @@ export default function Footer({
         </div>
 
         <div className="flex flex-wrap gap-4 text-sm text-[#5C3A57]">
-          {navigationItems.map((item) => (
-            <Link key={item.href} href={item.href}>
+          {footerItems.map((item) => (
+            <Link key={item.id} href={item.href}>
               {item.label}
             </Link>
           ))}
