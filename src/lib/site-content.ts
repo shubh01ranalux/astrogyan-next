@@ -13,7 +13,9 @@ export type SiteContentItem = {
 export async function getSiteContent(): Promise<Record<string, string>> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from("site_content").select("*");
+  const { data, error } = await supabase
+    .from("site_content")
+    .select("*");
 
   if (error) {
     console.error(error);
@@ -32,7 +34,8 @@ export async function getSiteContentItems(): Promise<SiteContentItem[]> {
   const { data, error } = await supabase
     .from("site_content")
     .select("*")
-    .order("group_name", { ascending: true });
+    .order("group_name", { ascending: true })
+    .order("label", { ascending: true });
 
   if (error) {
     console.error(error);

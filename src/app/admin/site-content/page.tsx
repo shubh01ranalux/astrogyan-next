@@ -94,7 +94,7 @@ export default async function SiteContentAdminPage() {
                     />
                   )}
 
-                  <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-xs text-[#9A7B8F]">
                       Key:{" "}
                       <code className="rounded bg-white px-2 py-1 text-[#5C3A57]">
