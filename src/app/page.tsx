@@ -8,17 +8,16 @@ import ServicesPreview from "@/sections/ServicesPreview";
 import TestimonialsSection from "@/sections/TestimonialsSection";
 import CTASection from "@/sections/CTASection";
 import { getSiteContent } from "@/lib/site-content";
+import { getHomepageSections } from "@/lib/homepage-sections";
 
 export default async function Home() {
   const content = await getSiteContent();
+  const sections = await getHomepageSections();
 
-  return (
-    <main className="relative min-h-screen overflow-x-hidden">
-      <Navbar
-  logo={content.site_logo}
-  title={content.footer_title || "Astrogyan"}
-/>
+  const enabledSections = sections.filter((section) => section.is_enabled);
 
+  const sectionComponents: Record<string, React.ReactNode> = {
+    hero: (
       <HeroSection
         eyebrow={content.hero_badge || "Premium Vedic Astrology"}
         title={content.hero_title || "Astrogyan"}
@@ -33,7 +32,9 @@ export default async function Home() {
         primaryButtonText={content.hero_primary_cta || "Book Consultation"}
         secondaryButtonText={content.hero_secondary_cta || "Explore Services"}
       />
+    ),
 
+    about: (
       <AboutSection
         title={content.about_title || "What is Astrogyan?"}
         subtitle={
@@ -45,7 +46,9 @@ export default async function Home() {
           "From personalized consultations and Panchang insights to puja services, gemstones, and free astrology tools, Astrogyan helps you find clarity before making important decisions in life."
         }
       />
+    ),
 
+    certificates: (
       <CertificatesSection
         title={content.certificates_title || "Trusted & Certified Guidance"}
         subtitle={
@@ -53,7 +56,9 @@ export default async function Home() {
           "Astrogyan focuses on clarity, ethics, and personalized Vedic guidance."
         }
       />
+    ),
 
+    services: (
       <ServicesPreview
         title={content.services_title || "Popular Services"}
         subtitle={
@@ -61,19 +66,22 @@ export default async function Home() {
           "Guidance designed for clarity, timing, and practical decisions."
         }
       />
+    ),
 
+    free_tools: (
       <FreeToolsSection
         eyebrow={content.free_tools_eyebrow || "Free Astrology Tools"}
         title={
-          content.free_tools_title ||
-          "Start your spiritual journey for free"
+          content.free_tools_title || "Start your spiritual journey for free"
         }
         description={
           content.free_tools_description ||
           "Explore Panchang, gemstone guidance, kundali insights, numerology and more AstroGyan tools."
         }
       />
+    ),
 
+    testimonials: (
       <TestimonialsSection
         title={content.testimonials_title || "Client Experiences"}
         subtitle={
@@ -81,29 +89,44 @@ export default async function Home() {
           "Real stories of clarity, guidance, and spiritual confidence."
         }
       />
+    ),
 
-<CTASection
-  eyebrow={content.cta_eyebrow || "Begin your guidance journey"}
-  title={
-    content.cta_title ||
-    "Find clarity before your next important decision."
-  }
-  description={
-    content.cta_description ||
-    "Book a consultation and receive personalized Vedic guidance based on your birth details and life questions."
-  }
-  buttonText={content.cta_button || "Book Consultation"}
-  backgroundImage={content.cta_background_image}
-/>
+    cta: (
+      <CTASection
+        eyebrow={content.cta_eyebrow || "Begin your guidance journey"}
+        title={
+          content.cta_title || "Find clarity before your next important decision."
+        }
+        description={
+          content.cta_description ||
+          "Book a consultation and receive personalized Vedic guidance based on your birth details and life questions."
+        }
+        buttonText={content.cta_button || "Book Consultation"}
+        backgroundImage={content.cta_background_image}
+      />
+    ),
+  };
+
+  return (
+    <main className="relative min-h-screen overflow-x-hidden">
+      <Navbar
+        logo={content.site_logo}
+        title={content.footer_title || "Astrogyan"}
+      />
+
+      {enabledSections.map((section) => (
+        <div key={section.section_key}>
+          {sectionComponents[section.section_key] || null}
+        </div>
+      ))}
 
       <Footer
-  logo={content.footer_logo || content.site_logo}
-  title={content.footer_title || "Astrogyan"}
-  subtitle={
-    content.footer_subtitle ||
-    "Ancient Vedic Wisdom for Modern Life"
-  }
-/>
+        logo={content.footer_logo || content.site_logo}
+        title={content.footer_title || "Astrogyan"}
+        subtitle={
+          content.footer_subtitle || "Ancient Vedic Wisdom for Modern Life"
+        }
+      />
     </main>
   );
 }
