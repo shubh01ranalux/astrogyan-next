@@ -14,7 +14,10 @@ export default async function Home() {
 
   return (
     <main className="relative min-h-screen overflow-x-hidden">
-      <Navbar />
+      <Navbar
+  logo={content.site_logo}
+  title={content.footer_title || "Astrogyan"}
+/>
 
       <HeroSection
         eyebrow={content.hero_badge || "Premium Vedic Astrology"}
@@ -79,26 +82,28 @@ export default async function Home() {
         }
       />
 
-      <CTASection
-        eyebrow={content.cta_eyebrow || "Begin your guidance journey"}
-        title={
-          content.cta_title ||
-          "Find clarity before your next important decision."
-        }
-        description={
-          content.cta_description ||
-          "Book a consultation and receive personalized Vedic guidance based on your birth details and life questions."
-        }
-        buttonText={content.cta_button || "Book Consultation"}
-      />
+<CTASection
+  eyebrow={content.cta_eyebrow || "Begin your guidance journey"}
+  title={
+    content.cta_title ||
+    "Find clarity before your next important decision."
+  }
+  description={
+    content.cta_description ||
+    "Book a consultation and receive personalized Vedic guidance based on your birth details and life questions."
+  }
+  buttonText={content.cta_button || "Book Consultation"}
+  backgroundImage={content.cta_background_image}
+/>
 
       <Footer
-        title={content.footer_title || "Astrogyan"}
-        subtitle={
-          content.footer_subtitle ||
-          "Ancient Vedic Wisdom for Modern Life"
-        }
-      />
+  logo={content.footer_logo || content.site_logo}
+  title={content.footer_title || "Astrogyan"}
+  subtitle={
+    content.footer_subtitle ||
+    "Ancient Vedic Wisdom for Modern Life"
+  }
+/>
     </main>
   );
 }

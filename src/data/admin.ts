@@ -13,7 +13,7 @@ export const adminNavigation = [
   { label: "Certificates", href: "/admin/certificates" },
 
   { label: "Site Content", href: "/admin/site-content" },
-
+  { label: "Homepage", href: "/admin/homepage" },
   { label: "Site Settings", href: "/admin/settings" },
 ];
 

@@ -5,6 +5,7 @@ type CTASectionProps = {
   title?: string;
   description?: string;
   buttonText?: string;
+  backgroundImage?: string;
 };
 
 export default function CTASection({
@@ -12,10 +13,22 @@ export default function CTASection({
   title = "Find clarity before your next important decision.",
   description = "Book a consultation and receive personalized Vedic guidance based on your birth details and life questions.",
   buttonText = "Book Consultation",
+  backgroundImage = "",
 }: CTASectionProps) {
   return (
     <section className="relative px-6 py-24 sm:px-10">
-      <div className="mx-auto max-w-5xl rounded-[2.5rem] border border-[#E6C89C]/50 bg-[#5C3A57] px-8 py-16 text-center shadow-xl">
+      <div
+        className="relative mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] border border-[#E6C89C]/50 bg-[#5C3A57] px-8 py-16 text-center shadow-xl"
+        style={
+          backgroundImage
+            ? {
+                backgroundImage: `linear-gradient(rgba(92, 58, 87, 0.82), rgba(92, 58, 87, 0.92)), url(${backgroundImage})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : undefined
+        }
+      >
         <p className="text-sm uppercase tracking-[0.35em] text-[#E6C89C]">
           {eyebrow}
         </p>

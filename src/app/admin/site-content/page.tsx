@@ -1,4 +1,5 @@
 import AdminLayout from "@/components/admin/AdminLayout";
+import SiteContentImageField from "@/components/admin/SiteContentImageField";
 import { getSiteContentItems } from "@/lib/site-content";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
@@ -21,6 +22,7 @@ async function updateContent(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin/site-content");
+  revalidatePath("/free-tools");
 }
 
 export default async function SiteContentAdminPage() {
@@ -43,8 +45,25 @@ export default async function SiteContentAdminPage() {
   return (
     <AdminLayout
       title="Site Content"
-      description="Edit homepage text, section headings, CTA copy and footer content."
+      description="Edit homepage text, images, section headings, CTA copy and footer content."
     >
+        <div className="mb-6 flex flex-wrap gap-3">
+  <a
+    href="/"
+    target="_blank"
+    className="rounded-full bg-[#5C3A57] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#B784A7]"
+  >
+    Open Homepage
+  </a>
+
+  <a
+    href="/free-tools"
+    target="_blank"
+    className="rounded-full border border-[#5C3A57]/20 px-5 py-3 text-sm font-medium text-[#5C3A57] transition hover:bg-[#5C3A57] hover:text-white"
+  >
+    Open Free Tools
+  </a>
+</div>
       <div className="space-y-8">
         {Object.entries(groupedItems).map(([groupName, groupItems]) => (
           <section
@@ -56,7 +75,7 @@ export default async function SiteContentAdminPage() {
                 {groupName}
               </h2>
               <p className="mt-1 text-sm text-[#9A7B8F]">
-                Manage all editable content for this website section.
+                Manage editable content for this website section.
               </p>
             </div>
 
@@ -86,6 +105,24 @@ export default async function SiteContentAdminPage() {
                       rows={4}
                       className="w-full rounded-xl border border-[#E6C89C]/50 bg-white px-4 py-3 text-sm text-[#5C3A57] outline-none transition focus:border-[#5C3A57]"
                     />
+                  ) : item.type === "image" ? (
+                    <div className="space-y-4">
+                      <SiteContentImageField
+  name="value"
+  defaultValue={item.value || ""}
+/>
+
+                      {item.value && (
+                        <div className="overflow-hidden rounded-2xl border border-[#E6C89C]/40 bg-white p-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={item.value}
+                            alt={item.label}
+                            className="max-h-48 w-full rounded-xl object-contain"
+                          />
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <input
                       name="value"
@@ -102,9 +139,12 @@ export default async function SiteContentAdminPage() {
                       </code>
                     </p>
 
-                    <button className="rounded-full bg-[#5C3A57] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#B784A7]">
-                      Save
-                    </button>
+                    <button
+  type="submit"
+  className="rounded-full bg-[#5C3A57] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#B784A7]"
+>
+  Save Changes
+</button>
                   </div>
                 </form>
               ))}
