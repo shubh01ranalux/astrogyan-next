@@ -21,7 +21,7 @@ export default function MobileMenu({
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
-      className="fixed inset-0 z-50 bg-[#F6EEE8]"
+      className="fixed right-0 top-0 z-50 h-full w-[82%] max-w-sm border-l border-[#E6C89C]/40 bg-[#F6EEE8]/95 shadow-2xl backdrop-blur-xl"
     >
       <div className="flex items-center justify-between border-b border-[#E6C89C]/40 px-6 py-5">
         <h2 className="font-display text-2xl text-[#5C3A57]">

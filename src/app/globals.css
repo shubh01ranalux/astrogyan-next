@@ -32,3 +32,23 @@ body {
   background: var(--champagne-gold);
   color: var(--deep-plum);
 }
+
+.field {
+  width: 100%;
+  border-radius: 999px;
+  border: 1px solid rgba(230, 200, 156, 0.55);
+  background: rgba(255, 255, 255, 0.62);
+  padding: 0.9rem 1.1rem;
+  color: #5c3a57;
+  outline: none;
+  backdrop-filter: blur(12px);
+}
+
+.field::placeholder {
+  color: rgba(92, 58, 87, 0.55);
+}
+
+.field:focus {
+  border-color: #b784a7;
+  box-shadow: 0 0 0 4px rgba(216, 167, 177, 0.18);
+}
