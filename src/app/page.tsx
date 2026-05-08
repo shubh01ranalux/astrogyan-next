@@ -1,4 +1,5 @@
 import CertificatesSection from "@/sections/CertificatesSection";
+import FreeToolsSection from "@/sections/FreeToolsSection";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/sections/HeroSection";
@@ -15,6 +16,7 @@ export default function Home() {
       <AboutSection />
       <CertificatesSection />
       <ServicesPreview />
+      <FreeToolsSection />
       <TestimonialsSection />
       <CTASection />
       <Footer />
