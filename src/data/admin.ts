@@ -1,13 +1,20 @@
 export const adminNavigation = [
   { label: "Dashboard", href: "/admin" },
+
   { label: "Services", href: "/admin/services" },
   { label: "Bookings", href: "/admin/bookings" },
   { label: "Blogs", href: "/admin/blogs" },
   { label: "Testimonials", href: "/admin/testimonials" },
+
   { label: "Puja Services", href: "/admin/puja-services" },
+  { label: "Free Tools", href: "/admin/free-tools" },
+
   { label: "Gemstones", href: "/admin/gemstones" },
-  { label: "Site Settings", href: "/admin/settings" },
   { label: "Certificates", href: "/admin/certificates" },
+
+  { label: "Site Content", href: "/admin/site-content" },
+
+  { label: "Site Settings", href: "/admin/settings" },
 ];
 
 export const adminStats = [

@@ -1,7 +1,15 @@
 import SectionHeading from "@/components/ui/SectionHeading";
 import { getCertificates } from "@/lib/certificates";
 
-export default async function CertificatesSection() {
+type CertificatesSectionProps = {
+  title?: string;
+  subtitle?: string;
+};
+
+export default async function CertificatesSection({
+  title = "Trusted & Certified Guidance",
+  subtitle = "Astrogyan focuses on clarity, ethics, and personalized Vedic guidance.",
+}: CertificatesSectionProps) {
   const certificates = await getCertificates();
 
   if (certificates.length === 0) return null;
@@ -9,10 +17,7 @@ export default async function CertificatesSection() {
   return (
     <section className="relative px-6 py-24 sm:px-10">
       <div className="mx-auto max-w-7xl">
-        <SectionHeading
-          title="Trusted & Certified Guidance"
-          subtitle="Astrogyan focuses on clarity, ethics, and personalized Vedic guidance."
-        />
+        <SectionHeading title={title} subtitle={subtitle} />
 
         <div className="grid gap-6 md:grid-cols-3">
           {certificates.map((item) => (

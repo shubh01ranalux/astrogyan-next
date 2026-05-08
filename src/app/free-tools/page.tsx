@@ -7,6 +7,8 @@ import { getFreeTools } from "@/lib/free-tools";
 export default async function FreeToolsPage() {
   const tools = await getFreeTools();
 
+  const categories = ["All", ...new Set(tools.map((tool) => tool.category))];
+
   return (
     <main className="min-h-screen overflow-x-hidden">
       <Navbar />
@@ -18,55 +20,69 @@ export default async function FreeToolsPage() {
       />
 
       <section className="px-6 pb-24 sm:px-10">
-        <div className="mx-auto grid max-w-7xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {tools.length === 0 && (
-            <p className="text-[#6F5B69]">No tools added yet.</p>
+        <div className="mx-auto max-w-7xl">
+          {tools.length > 0 && (
+            <div className="mb-10 flex flex-wrap justify-center gap-3">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  className="rounded-full border border-[#5C3A57]/15 bg-white px-5 py-2 text-sm font-medium text-[#5C3A57] transition hover:bg-[#5C3A57] hover:text-white"
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           )}
 
-          {tools.map((tool) => (
-            <div
-              key={tool.id}
-              className="rounded-[2rem] border border-[#E6C89C]/40 bg-white/55 p-7 shadow-sm backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/75"
-            >
-              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#E6C89C]/50 bg-[#F6EEE8] text-2xl text-[#5C3A57]">
-                {tool.icon || "✦"}
-              </div>
+          {tools.length === 0 ? (
+            <p className="text-center text-[#6F5B69]">No tools added yet.</p>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {tools.map((tool) => (
+                <div
+                  key={tool.id}
+                  className="rounded-[2rem] border border-[#E6C89C]/40 bg-white/55 p-7 shadow-sm backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/75"
+                >
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#E6C89C]/50 bg-[#F6EEE8] text-2xl text-[#5C3A57]">
+                    {tool.icon || "✦"}
+                  </div>
 
-              <p className="mt-6 text-sm uppercase tracking-[0.25em] text-[#B784A7]">
-                {tool.category}
-              </p>
+                  <p className="mt-6 text-sm uppercase tracking-[0.25em] text-[#B784A7]">
+                    {tool.category}
+                  </p>
 
-              <h2 className="mt-3 font-display text-3xl text-[#5C3A57]">
-                {tool.title}
-              </h2>
+                  <h2 className="mt-3 font-display text-3xl text-[#5C3A57]">
+                    {tool.title}
+                  </h2>
 
-              <p className="mt-4 leading-7 text-[#6F5B69]">
-                {tool.description}
-              </p>
+                  <p className="mt-4 leading-7 text-[#6F5B69]">
+                    {tool.description}
+                  </p>
 
-              <div className="mt-6 flex items-center justify-between border-t border-[#E6C89C]/40 pt-5">
-                <span className="rounded-full bg-[#D8A7B1]/25 px-4 py-2 text-xs text-[#5C3A57]">
-                  {tool.status}
-                </span>
+                  <div className="mt-6 flex items-center justify-between border-t border-[#E6C89C]/40 pt-5">
+                    <span
+                      className={`rounded-full px-4 py-2 text-xs font-medium ${
+                        tool.status === "Live"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : tool.status === "Beta"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-[#EADDE5] text-[#5C3A57]"
+                      }`}
+                    >
+                      {tool.status}
+                    </span>
 
-                {tool.link ? (
-                  <Link
-                    href={tool.link}
-                    className="rounded-full bg-[#5C3A57] px-5 py-3 text-sm text-[#F6EEE8] transition hover:bg-[#B784A7]"
-                  >
-                    {tool.button_text || "Open Tool"}
-                  </Link>
-                ) : (
-                  <button
-                    disabled
-                    className="rounded-full border border-[#5C3A57]/20 px-5 py-3 text-sm text-[#5C3A57]/60"
-                  >
-                    Coming Soon
-                  </button>
-                )}
-              </div>
+                    <Link
+                      href={`/free-tools/${tool.slug}`}
+                      className="rounded-full bg-[#5C3A57] px-5 py-3 text-sm text-[#F6EEE8] transition hover:bg-[#B784A7]"
+                    >
+                      {tool.button_text || "View Tool"}
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </section>
 

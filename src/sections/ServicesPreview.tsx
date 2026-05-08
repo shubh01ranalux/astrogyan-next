@@ -1,16 +1,21 @@
 import SectionHeading from "@/components/ui/SectionHeading";
 import { getServices } from "@/lib/services";
 
-export default async function ServicesPreview() {
+type ServicesPreviewProps = {
+  title?: string;
+  subtitle?: string;
+};
+
+export default async function ServicesPreview({
+  title = "Popular Services",
+  subtitle = "Guidance designed for clarity, timing, and practical decisions.",
+}: ServicesPreviewProps) {
   const services = await getServices();
 
   return (
     <section className="relative px-6 py-24 sm:px-10">
       <div className="mx-auto max-w-7xl">
-        <SectionHeading
-          title="Popular Services"
-          subtitle="Guidance designed for clarity, timing, and practical decisions."
-        />
+        <SectionHeading title={title} subtitle={subtitle} />
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {services.slice(0, 4).map((service) => (
