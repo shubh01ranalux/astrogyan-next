@@ -1,7 +1,9 @@
 import SectionHeading from "@/components/ui/SectionHeading";
-import { services } from "@/data/services";
+import { getServices } from "@/lib/services";
 
-export default function ServicesPreview() {
+export default async function ServicesPreview() {
+  const services = await getServices();
+
   return (
     <section className="relative px-6 py-24 sm:px-10">
       <div className="mx-auto max-w-7xl">
@@ -11,9 +13,9 @@ export default function ServicesPreview() {
         />
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {services.map((service) => (
+          {services.slice(0, 4).map((service) => (
             <div
-              key={service.title}
+              key={service.id}
               className="rounded-[2rem] border border-[#E6C89C]/40 bg-white/50 p-6 shadow-sm backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/70"
             >
               <h3 className="font-display text-2xl text-[#5C3A57]">
