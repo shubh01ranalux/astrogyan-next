@@ -1,5 +1,6 @@
 "use client";
 
+import ImageUpload from "@/components/admin/ImageUpload";
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { createClient } from "@/lib/supabase/client";
@@ -169,14 +170,13 @@ export default function AdminBlogsPage() {
               onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
             />
 
-            <input
-              className="field"
-              placeholder="Cover image URL"
-              value={form.cover_image}
-              onChange={(e) =>
-                setForm({ ...form, cover_image: e.target.value })
-              }
-            />
+            <ImageUpload
+  value={form.cover_image}
+  onChange={(url) =>
+    setForm({ ...form, cover_image: url })
+  }
+  folder="blogs"
+/>
 
             <input
               className="field"
