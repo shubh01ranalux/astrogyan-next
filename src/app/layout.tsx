@@ -1,3 +1,4 @@
+import { createMetadata } from "@/lib/seo";
 import AnimatedBackground from "@/components/visuals/AnimatedBackground";
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
@@ -13,11 +14,7 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
 });
 
-export const metadata: Metadata = {
-  title: "Astrogyan | Vedic Astrology Guidance",
-  description:
-    "Astrogyan is a premium astrology platform for consultations, Panchang, puja services, gemstones, and free astrology tools.",
-};
+export const metadata = createMetadata({});
 
 export default function RootLayout({
   children,

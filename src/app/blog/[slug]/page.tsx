@@ -1,3 +1,4 @@
+import { createMetadata } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -9,6 +10,29 @@ type BlogDetailPageProps = {
     slug: string;
   }>;
 };
+
+export async function generateMetadata({
+  params,
+}: BlogDetailPageProps) {
+  const { slug } = await params;
+  const blog = await getBlogBySlug(slug);
+
+  if (!blog) {
+    return createMetadata({
+      title: "Blog Not Found",
+      description: "This Astrogyan blog could not be found.",
+      path: `/blog/${slug}`,
+    });
+  }
+
+  return createMetadata({
+    title: blog.title,
+    description:
+      blog.excerpt || "Read this Astrogyan astrology insight.",
+    path: `/blog/${blog.slug}`,
+    image: blog.cover_image || undefined,
+  });
+}
 
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const { slug } = await params;
