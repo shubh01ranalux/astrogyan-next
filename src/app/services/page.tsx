@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PageHero from "@/components/layout/PageHero";
@@ -43,7 +44,9 @@ export default async function ServicesPage() {
                   </p>
                 </div>
 
-                <Button>Book</Button>
+                <Link href={`/book?service=${service.slug}`}>
+  <Button>Book</Button>
+</Link>
               </div>
             </div>
           ))}

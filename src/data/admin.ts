@@ -7,6 +7,7 @@ export const adminNavigation = [
   { label: "Puja Services", href: "/admin/puja-services" },
   { label: "Gemstones", href: "/admin/gemstones" },
   { label: "Site Settings", href: "/admin/settings" },
+  { label: "Certificates", href: "/admin/certificates" },
 ];
 
 export const adminStats = [
