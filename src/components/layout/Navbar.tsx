@@ -58,7 +58,7 @@ export default function Navbar({
 
           <button
             onClick={() => setIsOpen(true)}
-            className="rounded-full border border-[#E6C89C]/50 p-2 text-[#5C3A57] transition hover:bg-[#E6C89C]/30 lg:hidden"
+            className="rounded-full border border-[#E6C89C]/50 p-2 text-[#5C3A57] transition hover:bg-[#E6C89C]/30"
             aria-label="Open menu"
           >
             <Menu size={22} />
@@ -69,7 +69,6 @@ export default function Navbar({
       <MobileMenu
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        navigationItems={navbarItems}
       />
     </>
   );
