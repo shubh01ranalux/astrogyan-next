@@ -1,6 +1,25 @@
 import { createClient } from "@/lib/supabase/server";
 
-export async function getBookings() {
+export type Booking = {
+  id: string;
+  full_name: string;
+  phone: string;
+  email: string;
+  birth_date: string | null;
+  birth_time: string | null;
+  birth_place: string | null;
+  gender: string | null;
+  concern: string | null;
+  preferred_date: string | null;
+  preferred_time_slot: string | null;
+  message: string | null;
+  status: string;
+  selected_service: string | null;
+  service_title: string | null;
+  created_at: string;
+};
+
+export async function getBookings(): Promise<Booking[]> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -13,5 +32,5 @@ export async function getBookings() {
     return [];
   }
 
-  return data;
+  return data || [];
 }
