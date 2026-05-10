@@ -16,7 +16,7 @@ export default async function PanchangTopBar() {
   if (!panchang) return null;
 
   return (
-    <div className="relative z-50 border-b border-[#E6C89C]/30 bg-[#2A172A] px-4 py-2 text-[#F6EEE8] shadow-sm">
+    <div className="sticky top-[92px] z-30 border-b border-[#E6C89C]/20 bg-[#2A172A]/95 px-4 py-2 text-[#F6EEE8] shadow-sm backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-5 gap-y-2 text-center text-xs sm:text-sm">
         <span className="text-[#E6C89C]">
           Mumbai Panchang
