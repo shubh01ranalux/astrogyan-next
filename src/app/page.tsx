@@ -11,6 +11,7 @@ import { getSiteContent } from "@/lib/site-content";
 import { getHomepageSections } from "@/lib/homepage-sections";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getNavigationItems } from "@/lib/navigation";
+import PanchangTopBar from "@/components/layout/PanchangTopBar";
 
 export default async function Home() {
   const content = await getSiteContent();
@@ -111,6 +112,8 @@ export default async function Home() {
 
   return (
     <main className="relative min-h-screen overflow-x-hidden">
+      <PanchangTopBar />
+
       <Navbar
         logo={settings.site_logo || content.site_logo}
         title={settings.site_name || content.footer_title || "Astrogyan"}

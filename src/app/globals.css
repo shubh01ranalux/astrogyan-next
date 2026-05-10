@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  display: inline-block;
+  min-width: 100%;
+  animation: marquee 28s linear infinite;
+}
+
 :root {
   --dusty-rose: #d8a7b1;
   --muted-mauve: #b784a7;
