@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu } from "lucide-react";
 import MobileMenu from "./MobileMenu";
 import type { NavigationItem } from "@/lib/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 type NavbarProps = {
   logo?: string;
@@ -13,16 +14,85 @@ type NavbarProps = {
   navigationItems?: NavigationItem[];
 };
 
+const fallbackItems: NavigationItem[] = [
+  {
+    id: "home",
+    label: "Home",
+    href: "/",
+    location: "navbar",
+    is_active: true,
+    display_order: 0,
+  },
+  {
+    id: "services",
+    label: "Services",
+    href: "/services",
+    location: "navbar",
+    is_active: true,
+    display_order: 1,
+  },
+  {
+    id: "free-tools",
+    label: "Free Tools",
+    href: "/free-tools",
+    location: "navbar",
+    is_active: true,
+    display_order: 2,
+  },
+  {
+    id: "puja-services",
+    label: "Puja Services",
+    href: "/puja-services",
+    location: "navbar",
+    is_active: true,
+    display_order: 3,
+  },
+  {
+    id: "book",
+    label: "Book",
+    href: "/book",
+    location: "navbar",
+    is_active: true,
+    display_order: 4,
+  },
+];
+
 export default function Navbar({
   logo = "",
   title = "Astrogyan",
   navigationItems = [],
 }: NavbarProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const supabase = createClient();
 
-  const navbarItems = navigationItems.filter(
-    (item) => item.location === "navbar" || item.location === "both"
-  );
+  const [isOpen, setIsOpen] = useState(false);
+  const [items, setItems] = useState<NavigationItem[]>(navigationItems);
+
+  useEffect(() => {
+    async function loadNavigation() {
+      const { data, error } = await supabase
+        .from("navigation_items")
+        .select("*")
+        .eq("is_active", true)
+        .in("location", ["navbar", "both"])
+        .order("display_order", { ascending: true });
+
+      if (!error && data?.length) {
+        setItems(data);
+      }
+    }
+
+    if (navigationItems.length === 0) {
+      loadNavigation();
+    }
+  }, [supabase, navigationItems.length]);
+
+  const navbarItems = useMemo(() => {
+    const source = items.length > 0 ? items : fallbackItems;
+
+    return source.filter(
+      (item) => item.location === "navbar" || item.location === "both"
+    );
+  }, [items]);
 
   return (
     <>
@@ -69,6 +139,7 @@ export default function Navbar({
       <MobileMenu
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
+        navigationItems={navbarItems}
       />
     </>
   );

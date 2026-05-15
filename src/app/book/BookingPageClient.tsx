@@ -138,7 +138,7 @@ export default function BookingPageClient() {
 
     if (!preferredDate || !preferredTimeSlot) {
       setLoading(false);
-      setErrorMessage("Please select preferred date and time slot.");
+      setErrorMessage("Please select preferred booking date and time.");
       return;
     }
 
@@ -165,7 +165,7 @@ export default function BookingPageClient() {
       email: formData.get("email"),
 
       birth_date: formData.get("birth_date") || null,
-      birth_time: formData.get("birth_time"),
+      birth_time: formData.get("birth_time") || null,
       birth_place: formData.get("birth_place"),
 
       birth_latitude: formData.get("birth_latitude")
@@ -194,6 +194,42 @@ export default function BookingPageClient() {
     };
 
     const { error } = await supabase.from("bookings").insert(bookingPayload);
+
+if (!error) {
+  await supabase.from("leads").insert({
+    source_type: "booking",
+    source_slug: selectedService || "general-booking",
+    source_title: selectedServiceTitle || "General Consultation",
+    source_url: selectedService
+      ? `/book?service=${selectedService}`
+      : "/book",
+
+    full_name: formData.get("full_name"),
+    phone: formData.get("phone"),
+    email: formData.get("email"),
+    date_of_birth: formData.get("birth_date") || null,
+    gender: formData.get("gender"),
+
+    lead_intent: selectedService
+      ? `Booked consultation for ${selectedServiceTitle}`
+      : "Submitted general booking",
+
+    input_data: {
+      birth_time: formData.get("birth_time"),
+      birth_place: formData.get("birth_place"),
+      birth_latitude: formData.get("birth_latitude"),
+      birth_longitude: formData.get("birth_longitude"),
+      birth_timezone: formData.get("birth_timezone"),
+      preferred_date: formData.get("preferred_date"),
+      preferred_time_slot: preferredTimeSlot,
+      concern: selectedService ? null : formData.get("concern"),
+      selected_service: selectedService || null,
+      service_title: selectedServiceTitle || null,
+    },
+
+    notes: formData.get("message"),
+  });
+}
 
     if (!error) {
       await fetch("/api/send-booking-email", {
@@ -235,80 +271,163 @@ export default function BookingPageClient() {
             {selectedService && (
               <div className="mb-5 rounded-full border border-[#E6C89C]/50 bg-[#F6EEE8]/80 px-5 py-3 text-sm text-[#5C3A57]">
                 Selected Service:{" "}
-                <span className="font-semibold">
-                  {selectedServiceTitle}
-                </span>
+                <span className="font-semibold">{selectedServiceTitle}</span>
               </div>
             )}
 
             <div className="grid gap-5 sm:grid-cols-2">
-              <input
-                name="full_name"
-                className="field"
-                placeholder="Full Name"
-                required
-              />
 
-              <input
-                name="phone"
-                className="field"
-                placeholder="Phone Number"
-                required
-              />
+  <label className="block">
+    <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+      Full Name
+    </span>
 
-              <input
-                name="email"
-                className="field"
-                type="email"
-                placeholder="Email Address"
-                required
-              />
+    <input
+      name="full_name"
+      className="field w-full"
+      placeholder="Enter your full name"
+      required
+    />
+  </label>
 
-              <input name="birth_date" className="field" type="date" />
+  <label className="block">
+    <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+      Phone Number
+    </span>
 
-              <input name="birth_time" className="field" type="time" />
+    <input
+      name="phone"
+      className="field w-full"
+      placeholder="Enter phone number"
+      required
+    />
+  </label>
 
-              <PlaceSearchInput />
+  <label className="block">
+    <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+      Email Address
+    </span>
 
-              <select name="gender" className="field">
-                <option value="">Gender</option>
-                <option>Female</option>
-                <option>Male</option>
-                <option>Other</option>
-              </select>
+    <input
+      name="email"
+      className="field w-full"
+      type="email"
+      placeholder="Enter email address"
+      required
+    />
+  </label>
 
-              {!selectedService && (
-                <select name="concern" className="field">
-                  <option value="">Main Concern</option>
+  <label className="block">
+    <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+      Date of Birth
+    </span>
 
-                  {consultationConcerns.map((item) => (
-                    <option key={item}>{item}</option>
-                  ))}
-                </select>
-              )}
+    <input
+      name="birth_date"
+      className="field w-full"
+      type="date"
+    />
+  </label>
 
-              <input
-                name="preferred_date"
-                className="field"
-                type="date"
-                min={today}
-                value={preferredDate}
-                onChange={(e) => setPreferredDate(e.target.value)}
-                required
-              />
+  <label className="block">
+    <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+      Birth Time
+    </span>
 
-              <select
-                name="preferred_time_slot"
-                className="field"
-                required
-              >
-                <option value="">Preferred Time Slot</option>
+    <input
+      name="birth_time"
+      className="field w-full"
+      type="time"
+    />
+  </label>
 
-                {filteredTimeSlots.map((slot) => (
-                  <option key={slot}>{slot}</option>
-                ))}
-              </select>
-            </div>
+  <div className="sm:col-span-2">
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+        Birth Place / City
+      </span>
+
+      <PlaceSearchInput />
+    </label>
+  </div>
+
+  <label className="block">
+    <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+      Gender
+    </span>
+
+    <select name="gender" className="field w-full">
+      <option value="">Select gender</option>
+      <option>Female</option>
+      <option>Male</option>
+      <option>Other</option>
+    </select>
+  </label>
+
+  {!selectedService && (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+        Main Concern
+      </span>
+
+      <select name="concern" className="field w-full">
+        <option value="">Select concern</option>
+
+        {consultationConcerns.map((item) => (
+          <option key={item}>{item}</option>
+        ))}
+      </select>
+    </label>
+  )}
+
+  <label className="block">
+    <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+      Preferred Booking Date
+    </span>
+
+    <input
+      name="preferred_date"
+      className="field w-full"
+      type="date"
+      min={today}
+      value={preferredDate}
+      onChange={(e) => setPreferredDate(e.target.value)}
+      required
+    />
+  </label>
+
+  <label className="block">
+    <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+      Preferred Booking Time
+    </span>
+
+    <select
+      name="preferred_time_slot"
+      className="field w-full"
+      required
+    >
+      <option value="">Select preferred time</option>
+
+      {filteredTimeSlots.map((slot) => (
+        <option key={slot}>{slot}</option>
+      ))}
+    </select>
+  </label>
+
+  <div className="sm:col-span-2">
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-[#5C3A57]">
+        Describe Your Question / Concern
+      </span>
+
+      <textarea
+        name="message"
+        className="field min-h-36 w-full resize-none rounded-[1.5rem]"
+        placeholder="Write your concern in detail..."
+      />
+    </label>
+  </div>
+</div>
 
             {preferredDate && filteredTimeSlots.length === 0 && (
               <p className="mt-5 rounded-full bg-red-100 px-5 py-3 text-sm text-red-700">
@@ -316,11 +435,6 @@ export default function BookingPageClient() {
               </p>
             )}
 
-            <textarea
-              name="message"
-              className="field mt-5 min-h-36 w-full resize-none rounded-[1.5rem]"
-              placeholder="Write your question or concern..."
-            />
 
             {success && (
               <p className="mt-5 rounded-full bg-[#7FB8B4]/25 px-5 py-3 text-sm text-[#315C58]">

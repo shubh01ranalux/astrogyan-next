@@ -2,25 +2,18 @@
 
 import Link from "next/link";
 import { X } from "lucide-react";
+import type { NavigationItem } from "@/lib/navigation";
 
 type MobileMenuProps = {
   isOpen: boolean;
   onClose: () => void;
+  navigationItems: NavigationItem[];
 };
-
-const links = [
-  { label: "Home", href: "/" },
-  { label: "Services", href: "/services" },
-  { label: "Free Tools", href: "/free-tools" },
-  { label: "Panchang", href: "/panchang" },
-  { label: "Gemstones", href: "/gemstones" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "/contact" },
-];
 
 export default function MobileMenu({
   isOpen,
   onClose,
+  navigationItems,
 }: MobileMenuProps) {
   if (!isOpen) return null;
 
@@ -35,15 +28,16 @@ export default function MobileMenu({
           <button
             onClick={onClose}
             className="rounded-full border border-[#E6C89C]/50 p-2 text-[#5C3A57]"
+            aria-label="Close menu"
           >
             <X size={20} />
           </button>
         </div>
 
         <div className="flex flex-col gap-3">
-          {links.map((item) => (
+          {navigationItems.map((item) => (
             <Link
-              key={item.href}
+              key={item.id}
               href={item.href}
               onClick={onClose}
               className="rounded-2xl border border-[#E6C89C]/40 bg-white px-4 py-4 text-base font-medium text-[#5C3A57] transition hover:bg-[#E6C89C]/20"
