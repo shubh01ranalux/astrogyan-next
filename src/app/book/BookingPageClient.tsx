@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PageHero from "@/components/layout/PageHero";
 import Button from "@/components/ui/Button";
+import PlaceSearchInput from "@/components/forms/PlaceSearchInput";
 
 import { createClient } from "@/lib/supabase/client";
 
@@ -167,6 +168,18 @@ export default function BookingPageClient() {
       birth_time: formData.get("birth_time"),
       birth_place: formData.get("birth_place"),
 
+      birth_latitude: formData.get("birth_latitude")
+        ? Number(formData.get("birth_latitude"))
+        : null,
+
+      birth_longitude: formData.get("birth_longitude")
+        ? Number(formData.get("birth_longitude"))
+        : null,
+
+      birth_timezone: formData.get("birth_timezone")
+        ? Number(formData.get("birth_timezone"))
+        : 5.5,
+
       gender: formData.get("gender"),
       concern: selectedService ? null : formData.get("concern"),
 
@@ -196,6 +209,7 @@ export default function BookingPageClient() {
       setPreferredDate("");
       setBookedSlots([]);
     } else {
+      console.error(error);
       setErrorMessage("Unable to submit booking. Please try again.");
     }
 
@@ -254,11 +268,7 @@ export default function BookingPageClient() {
 
               <input name="birth_time" className="field" type="time" />
 
-              <input
-                name="birth_place"
-                className="field"
-                placeholder="Place of Birth"
-              />
+              <PlaceSearchInput />
 
               <select name="gender" className="field">
                 <option value="">Gender</option>
@@ -325,7 +335,9 @@ export default function BookingPageClient() {
             )}
 
             <div className="mt-7">
-              <Button>{loading ? "Submitting..." : "Submit Booking Request"}</Button>
+              <Button>
+                {loading ? "Submitting..." : "Submit Booking Request"}
+              </Button>
             </div>
           </form>
 
@@ -344,9 +356,9 @@ export default function BookingPageClient() {
             </p>
 
             <div className="mt-8 space-y-4 border-t border-[#E6C89C]/30 pt-6">
+              <p>✓ Accurate place search with coordinates</p>
               <p>✓ Personalized birth-chart based guidance</p>
               <p>✓ Clear remedies and practical suggestions</p>
-              <p>✓ Future-ready for payment integration</p>
               <p>✓ Booking appears inside admin console</p>
             </div>
           </aside>
