@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import AdminSidebar from "./AdminSidebar";
+import AdminLogoutButton from "./AdminLogoutButton";
 import { adminNavigation } from "@/data/admin";
 
 type AdminLayoutProps = {
@@ -24,7 +25,7 @@ export default function AdminLayout({
       <AdminSidebar />
 
       <section className="min-h-screen flex-1 px-5 py-5 sm:px-8 lg:px-10">
-        <div className="mb-8 flex items-center justify-between rounded-[1.5rem] border border-[#E6C89C]/40 bg-white/60 p-4 shadow-sm backdrop-blur-md">
+        <div className="mb-8 flex items-center justify-between gap-4 rounded-[1.5rem] border border-[#E6C89C]/40 bg-white/60 p-4 shadow-sm backdrop-blur-md">
           <div>
             <h1 className="font-display text-3xl text-[#5C3A57] sm:text-4xl">
               {title}
@@ -32,12 +33,17 @@ export default function AdminLayout({
             <p className="mt-1 text-sm text-[#6F5B69]">{description}</p>
           </div>
 
-          <button
-            onClick={() => setOpen(true)}
-            className="rounded-full border border-[#E6C89C]/50 p-2 text-[#5C3A57] lg:hidden"
-          >
-            <Menu />
-          </button>
+          <div className="flex items-center gap-3">
+            <AdminLogoutButton />
+
+            <button
+              onClick={() => setOpen(true)}
+              className="rounded-full border border-[#E6C89C]/50 p-2 text-[#5C3A57] lg:hidden"
+              aria-label="Open admin menu"
+            >
+              <Menu />
+            </button>
+          </div>
         </div>
 
         {children}
@@ -54,7 +60,7 @@ export default function AdminLayout({
                 <p className="text-sm text-[#B784A7]">Admin Console</p>
               </div>
 
-              <button onClick={() => setOpen(false)}>
+              <button onClick={() => setOpen(false)} aria-label="Close menu">
                 <X className="text-[#5C3A57]" />
               </button>
             </div>

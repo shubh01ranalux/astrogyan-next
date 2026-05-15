@@ -12,15 +12,52 @@ export type DailyPanchang = {
   current_message: string | null;
 };
 
-export async function getTodayPanchang(): Promise<DailyPanchang | null> {
-  const supabase = await createClient();
-
-  const today = new Intl.DateTimeFormat("en-CA", {
+function getTodayInIndia() {
+  return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Kolkata",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
+}
+
+export async function upsertTodayPanchangFallback() {
+  const supabase = await createClient();
+  const today = getTodayInIndia();
+
+  const payload = {
+    panchang_date: today,
+    location: "Mumbai, India",
+    sunrise: "06:05 AM",
+    sunset: "07:05 PM",
+    tithi: "Today’s Tithi",
+    nakshatra: "Today’s Nakshatra",
+    rahu_kaal: "Check full Panchang",
+    current_message:
+      "Mumbai Panchang is being prepared. View full Panchang for details.",
+    raw_data: {},
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from("daily_panchang_cache")
+    .upsert(payload, {
+      onConflict: "panchang_date",
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error(error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function getTodayPanchang(): Promise<DailyPanchang | null> {
+  const supabase = await createClient();
+  const today = getTodayInIndia();
 
   const { data, error } = await supabase
     .from("daily_panchang_cache")
@@ -33,5 +70,7 @@ export async function getTodayPanchang(): Promise<DailyPanchang | null> {
     return null;
   }
 
-  return data;
+  if (data) return data;
+
+  return upsertTodayPanchangFallback();
 }
