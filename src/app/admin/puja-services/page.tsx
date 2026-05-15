@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { createClient } from "@/lib/supabase/client";
+import PujaImageUploadField from "@/components/admin/PujalmageUploadField";
 
 type PujaService = {
   id: string;
@@ -10,8 +11,11 @@ type PujaService = {
   slug: string;
   description: string;
   price: number | null;
+  cost_with_samagri: number | null;
+  cost_without_samagri: number | null;
   duration: string | null;
   benefits: string | null;
+  image_url: string | null;
   is_active: boolean;
   display_order: number | null;
 };
@@ -21,8 +25,11 @@ const emptyForm = {
   slug: "",
   description: "",
   price: "",
+  cost_with_samagri: "",
+  cost_without_samagri: "",
   duration: "",
   benefits: "",
+  image_url: "",
   is_active: true,
   display_order: "0",
 };
@@ -70,18 +77,22 @@ export default function AdminPujaServicesPage() {
       slug: form.slug || makeSlug(form.title),
       description: form.description,
       price: form.price ? Number(form.price) : null,
+      cost_with_samagri: form.cost_with_samagri
+        ? Number(form.cost_with_samagri)
+        : null,
+      cost_without_samagri: form.cost_without_samagri
+        ? Number(form.cost_without_samagri)
+        : null,
       duration: form.duration,
       benefits: form.benefits,
+      image_url: form.image_url,
       is_active: form.is_active,
       display_order: Number(form.display_order || 0),
       updated_at: new Date().toISOString(),
     };
 
     if (editingId) {
-      await supabase
-        .from("puja_services")
-        .update(payload)
-        .eq("id", editingId);
+      await supabase.from("puja_services").update(payload).eq("id", editingId);
     } else {
       await supabase.from("puja_services").insert(payload);
     }
@@ -100,8 +111,15 @@ export default function AdminPujaServicesPage() {
       slug: puja.slug,
       description: puja.description,
       price: puja.price ? String(puja.price) : "",
+      cost_with_samagri: puja.cost_with_samagri
+        ? String(puja.cost_with_samagri)
+        : "",
+      cost_without_samagri: puja.cost_without_samagri
+        ? String(puja.cost_without_samagri)
+        : "",
       duration: puja.duration || "",
       benefits: puja.benefits || "",
+      image_url: puja.image_url || "",
       is_active: puja.is_active,
       display_order: String(puja.display_order || 0),
     });
@@ -159,9 +177,7 @@ export default function AdminPujaServicesPage() {
               className="field"
               placeholder="Slug"
               value={form.slug}
-              onChange={(e) =>
-                setForm({ ...form, slug: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, slug: e.target.value })}
               required
             />
 
@@ -179,31 +195,62 @@ export default function AdminPujaServicesPage() {
               className="field min-h-28 resize-none rounded-[1.5rem]"
               placeholder="Benefits / what is included"
               value={form.benefits}
-              onChange={(e) =>
-                setForm({ ...form, benefits: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, benefits: e.target.value })}
             />
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-[1.5rem] border border-[#E6C89C]/40 bg-[#FFF9F4] p-4">
+              <p className="mb-3 text-sm font-semibold text-[#5C3A57]">
+                Puja Image
+              </p>
+
+              <PujaImageUploadField
+  value={form.image_url}
+  onChange={(value) => setForm({ ...form, image_url: value })}
+/>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
               <input
                 className="field"
                 type="number"
-                placeholder="Price"
+                placeholder="Base Price"
                 value={form.price}
+                onChange={(e) => setForm({ ...form, price: e.target.value })}
+              />
+
+              <input
+                className="field"
+                type="number"
+                placeholder="Cost without Samagri"
+                value={form.cost_without_samagri}
                 onChange={(e) =>
-                  setForm({ ...form, price: e.target.value })
+                  setForm({
+                    ...form,
+                    cost_without_samagri: e.target.value,
+                  })
                 }
               />
 
               <input
                 className="field"
-                placeholder="Duration"
-                value={form.duration}
+                type="number"
+                placeholder="Cost with Samagri"
+                value={form.cost_with_samagri}
                 onChange={(e) =>
-                  setForm({ ...form, duration: e.target.value })
+                  setForm({
+                    ...form,
+                    cost_with_samagri: e.target.value,
+                  })
                 }
               />
             </div>
+
+            <input
+              className="field"
+              placeholder="Duration"
+              value={form.duration}
+              onChange={(e) => setForm({ ...form, duration: e.target.value })}
+            />
 
             <input
               className="field"
@@ -232,11 +279,7 @@ export default function AdminPujaServicesPage() {
                 disabled={saving}
                 className="rounded-full bg-[#5C3A57] px-6 py-3 text-sm font-medium text-[#F6EEE8] transition hover:bg-[#B784A7] disabled:opacity-60"
               >
-                {saving
-                  ? "Saving..."
-                  : editingId
-                  ? "Update Puja"
-                  : "Add Puja"}
+                {saving ? "Saving..." : editingId ? "Update Puja" : "Add Puja"}
               </button>
 
               {editingId && (
@@ -264,9 +307,7 @@ export default function AdminPujaServicesPage() {
             {loading && <p className="text-[#6F5B69]">Loading pujas...</p>}
 
             {!loading && pujas.length === 0 && (
-              <p className="text-[#6F5B69]">
-                No puja services added yet.
-              </p>
+              <p className="text-[#6F5B69]">No puja services added yet.</p>
             )}
 
             {pujas.map((puja) => (
@@ -275,7 +316,17 @@ export default function AdminPujaServicesPage() {
                 className="rounded-[1.25rem] border border-[#E6C89C]/35 bg-[#F6EEE8]/70 p-5"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
+                  <div className="min-w-0 flex-1">
+                    {puja.image_url && (
+  <div className="mb-4 h-40 w-full overflow-hidden rounded-[1.25rem] border border-[#E6C89C]/40 bg-white">
+    <img
+      src={puja.image_url}
+      alt={puja.title}
+      className="h-full w-full object-cover"
+    />
+  </div>
+)}
+
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-display text-2xl text-[#5C3A57]">
                         {puja.title}
@@ -306,10 +357,19 @@ export default function AdminPujaServicesPage() {
                       </p>
                     )}
 
-                    <p className="mt-3 text-sm text-[#5C3A57]">
-                      ₹{puja.price || 0} · {puja.duration || "No duration"} ·
-                      Order: {puja.display_order || 0}
-                    </p>
+                    <div className="mt-3 grid gap-2 text-sm text-[#5C3A57] sm:grid-cols-2">
+                      <p>Base: ₹{puja.price || 0}</p>
+                      <p>
+                        Without Samagri: ₹
+                        {puja.cost_without_samagri || puja.price || 0}
+                      </p>
+                      <p>
+                        With Samagri: ₹
+                        {puja.cost_with_samagri || puja.price || 0}
+                      </p>
+                      <p>{puja.duration || "No duration"}</p>
+                      <p>Order: {puja.display_order || 0}</p>
+                    </div>
                   </div>
 
                   <div className="flex shrink-0 flex-wrap gap-2">

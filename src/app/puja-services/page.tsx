@@ -17,7 +17,25 @@ export default async function PujaServicesPage() {
         title="Sacred Rituals for Peace & Growth"
         description="Book personalized puja services for grah shanti, protection, prosperity, health, marriage, and spiritual upliftment."
       />
+<section className="px-6 pb-10 sm:px-10">
+  <div className="mx-auto max-w-7xl rounded-[2rem] border border-[#E6C89C]/40 bg-white/70 p-6 text-center shadow-sm backdrop-blur-md">
+    <h2 className="font-display text-3xl text-[#5C3A57]">
+      Unsure which Puja you need?
+    </h2>
 
+    <p className="mx-auto mt-3 max-w-3xl leading-7 text-[#6F5B69]">
+      Doorstep Puja services are currently available only in Mumbai and Pune.
+      Remote/online Puja bookings are available for other locations.
+    </p>
+
+    <Link
+      href="/book?service=puja-consultation"
+      className="mt-5 inline-flex rounded-full bg-[#5C3A57] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#B784A7]"
+    >
+      Book Puja Consultation
+    </Link>
+  </div>
+</section>
       <section className="px-6 pb-24 sm:px-10">
         <div className="mx-auto max-w-7xl">
           {pujas.length === 0 ? (
@@ -26,9 +44,20 @@ export default async function PujaServicesPage() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {pujas.map((puja) => (
                 <div
-                  key={puja.id}
-                  className="rounded-[2rem] border border-[#E6C89C]/40 bg-white/55 p-7 shadow-sm backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/75"
-                >
+  key={puja.id}
+  className="overflow-hidden rounded-[2rem] border border-[#E6C89C]/40 bg-white/55 shadow-sm backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/75"
+>
+  {puja.image_url && (
+  <div className="h-56 w-full overflow-hidden bg-[#F6EEE8]">
+    <img
+      src={puja.image_url}
+      alt={puja.title}
+      className="h-full w-full object-cover"
+    />
+  </div>
+)}
+
+<div className="p-7">
                   <h2 className="font-display text-3xl text-[#5C3A57]">
                     {puja.title}
                   </h2>
@@ -46,15 +75,21 @@ export default async function PujaServicesPage() {
                   <div className="mt-6 flex items-center justify-between border-t border-[#E6C89C]/40 pt-5">
                     <div>
                       <p className="text-2xl font-semibold text-[#5C3A57]">
-                        ₹{puja.price || 0}
+                        ₹{puja.cost_without_samagri || puja.price || 0}
                       </p>
 
-                      <p className="text-sm text-[#B784A7]">
-                        {puja.duration || "Custom duration"}
-                      </p>
+                      <div className="mt-1 space-y-1">
+  <p className="text-sm text-[#B784A7]">
+    Without Samagri: ₹{puja.cost_without_samagri || puja.price || 0}
+  </p>
+
+  <p className="text-sm text-[#B784A7]">
+    With Samagri: ₹{puja.cost_with_samagri || puja.price || 0}
+  </p>
+</div></div>
                     </div>
 
-                    <Link href={`/book?service=${puja.slug}`}>
+                    <Link href={`/book-puja?service=${puja.slug}`}>
                       <Button>Book Puja</Button>
                     </Link>
                   </div>
