@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useRef, useState } from "react";
 import jsPDF from "jspdf";
 import PlaceSearchInput from "@/components/forms/PlaceSearchInput";
@@ -329,7 +329,7 @@ function downloadPdf() {
           )}
         </form>
 
-        <div className="rounded-[2rem] border border-[#E6C89C]/40 bg-white/65 p-6 shadow-sm backdrop-blur-md">
+        <div className="min-w-0 overflow-hidden rounded-[2rem] border border-[#E6C89C]/40 bg-white/65 p-4 shadow-sm backdrop-blur-md sm:p-6">
           {!result ? (
             <div className="flex min-h-96 items-center justify-center text-center">
               <div>
@@ -345,15 +345,22 @@ function downloadPdf() {
             </div>
           ) : (
             <>
-              <div className="mb-5 flex justify-end">
-                <button
-                  type="button"
-                  onClick={downloadPdf}
-                  className="rounded-full bg-[#5C3A57] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#B784A7]"
-                >
-                  Download PDF
-                </button>
-              </div>
+              <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+  <Link
+    href="/book?service=kundli-reading"
+    className="rounded-full border border-[#5C3A57]/20 px-6 py-3 text-center text-sm font-medium text-[#5C3A57] transition hover:bg-white/70"
+  >
+    Book Full Kundali Reading
+  </Link>
+
+  <button
+    type="button"
+    onClick={downloadPdf}
+    className="rounded-full bg-[#5C3A57] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#B784A7]"
+  >
+    Download PDF
+  </button>
+</div>
 
               <div
                 ref={reportRef}
@@ -421,8 +428,8 @@ function downloadPdf() {
                     Planetary Positions
                   </h2>
 
-                  <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-[#E6C89C]/50">
-                    <table className="w-full text-left text-sm">
+                  <div className="mt-4 overflow-x-auto rounded-[1.5rem] border border-[#E6C89C]/50">
+                    <table className="min-w-[720px] w-full text-left text-sm">
                       <thead className="bg-[#5C3A57] text-white">
                         <tr>
                           <th className="p-3">Planet</th>
