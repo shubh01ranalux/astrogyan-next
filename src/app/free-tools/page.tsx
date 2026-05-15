@@ -78,7 +78,7 @@ export default async function FreeToolsPage() {
                     </span>
 
                     <Link
-                      href={`/free-tools/${tool.slug}`}
+                    href={tool.link || `/free-tools/${tool.slug}`}
                       className="rounded-full bg-[#5C3A57] px-5 py-3 text-sm text-[#F6EEE8] transition hover:bg-[#B784A7]"
                     >
                       {tool.button_text || "View Tool"}
