@@ -20,6 +20,7 @@ async function updateSetting(formData: FormData) {
     })
     .eq("id", id);
 
+  revalidatePath("/","layout");
   revalidatePath("/");
   revalidatePath("/admin/settings");
 }

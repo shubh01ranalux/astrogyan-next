@@ -12,6 +12,7 @@ import { getHomepageSections } from "@/lib/homepage-sections";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getNavigationItems } from "@/lib/navigation";
 import PanchangTopBar from "@/components/layout/PanchangTopBar";
+import AboutAstrologerSection from "@/components/home/AboutAstrologerSection";
 
 export default async function Home() {
   const content = await getSiteContent();
@@ -36,7 +37,17 @@ export default async function Home() {
         secondaryButtonText={content.hero_secondary_cta || "Explore Services"}
       />
     ),
-
+about_astrologer: (
+  <AboutAstrologerSection
+    eyebrow={content.astrologer_eyebrow || "About Your Astrologer"}
+    title={content.astrologer_title || "Meet Your Vedic Guide"}
+    description={
+      content.astrologer_description ||
+      "Astrogyan brings ancient Vedic wisdom into practical modern guidance."
+    }
+    image={content.astrologer_image}
+  />
+),
     about: (
       <AboutSection
         title={content.about_title || "What is Astrogyan?"}

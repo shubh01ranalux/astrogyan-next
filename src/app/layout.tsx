@@ -4,6 +4,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { getSiteSettings } from "@/lib/site-settings";
 
+
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -24,9 +25,20 @@ export async function generateMetadata(): Promise<Metadata> {
     settings.default_meta_description ||
     "Get personalized Vedic astrology guidance, Panchang insights, gemstone recommendations, puja services and free astrology tools.";
 
+  const favicon =
+    settings.site_favicon ||
+    settings.favicon ||
+    settings.site_logo ||
+    "/favicon.ico";
+
   return {
     title,
     description,
+    icons: {
+      icon: favicon,
+      shortcut: favicon,
+      apple: favicon,
+    },
     openGraph: {
       title,
       description,
