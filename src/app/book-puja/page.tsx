@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PageHero from "@/components/layout/PageHero";
@@ -14,7 +15,9 @@ export default function BookPujaPage() {
         description="Doorstep Puja is available in Mumbai and Pune only. Remote Puja can be booked from anywhere."
       />
 
-      <PujaBookingPageClient />
+      <Suspense fallback={null}>
+        <PujaBookingPageClient />
+      </Suspense>
 
       <Footer />
     </main>

@@ -1,18 +1,21 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PageHero from "@/components/layout/PageHero";
-import BasicCalculatorClient from "@/components/tools/BasicCalculatorClient";
+import NameNumerologyCalculator from "@/components/calculators/numerology/NameNumerologyCalculator";
 
 export default function NameNumerologyCalculatorPage() {
   return (
     <main className="min-h-screen overflow-x-hidden">
       <Navbar />
+
       <PageHero
         eyebrow="Free Numerology"
         title="Name Numerology Calculator"
-        description="Find your name number and its basic numerology meaning."
+        description="Calculate your name number using Chaldean numerology and get a complete AstroGyan report with personality, career, relationship, money, lucky colours, lucky dates and remedies."
       />
-      <BasicCalculatorClient type="name-numerology" />
+
+      <NameNumerologyCalculator />
+
       <Footer />
     </main>
   );
