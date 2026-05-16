@@ -8,16 +8,42 @@ import AstrologyLeadFields, {
 import { createClient } from "@/lib/supabase/client";
 import { saveCalculatorLead } from "@/lib/calculators/shared/save-calculator-lead";
 import {
-  calculateMoonSignReport,
-  type MoonSignReport,
-} from "@/lib/calculators/astrology/moonsign";
+  calculateRahuKetuReport,
+  type RahuKetuReport,
+} from "@/lib/calculators/astrology/rahu-ketu";
 
-export default function MoonSignCalculator() {
+export default function RahuKetuCalculator() {
   const supabase = createClient();
 
-  const [result, setResult] = useState<MoonSignReport | null>(null);
+  const [result, setResult] = useState<RahuKetuReport | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  async function fetchKundali(payload: {
+    name: string;
+    birthDate: string;
+    birthTime: string;
+    birthPlace: string;
+    latitude: number;
+    longitude: number;
+    timezone: number;
+  }) {
+    const response = await fetch("/api/kundali/basic-report", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const json = await response.json();
+
+    if (!json.ok) {
+      throw new Error(json.error || "Unable to calculate Kundali details.");
+    }
+
+    return json.data;
+  }
 
   async function handleCalculate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,57 +56,40 @@ export default function MoonSignCalculator() {
       const lead = getAstrologyLeadData(formData);
 
       if (!lead.birthLatitude || !lead.birthLongitude) {
-  throw new Error("Please select a birth place from the suggestions.");
-}
+        throw new Error("Please select a birth place from the suggestions.");
+      }
 
-const kundaliResponse = await fetch("/api/kundali/basic-report", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    name: lead.fullName,
-    birthDate: lead.dateOfBirth,
-    birthTime: lead.birthTime,
-    birthPlace: lead.birthPlace,
-    latitude: lead.birthLatitude,
-    longitude: lead.birthLongitude,
-    timezone: lead.birthTimezone,
-  }),
-});
+      const kundaliData = await fetchKundali({
+        name: lead.fullName,
+        birthDate: lead.dateOfBirth,
+        birthTime: lead.birthTime,
+        birthPlace: lead.birthPlace,
+        latitude: lead.birthLatitude,
+        longitude: lead.birthLongitude,
+        timezone: lead.birthTimezone,
+      });
 
-const kundaliJson = await kundaliResponse.json();
-
-if (!kundaliJson.ok) {
-  throw new Error(
-    kundaliJson.error || "Unable to calculate astrology details."
-  );
-}
-
-const report = calculateMoonSignReport({
-  fullName: lead.fullName,
-  dateOfBirth: lead.dateOfBirth,
-  birthTime: lead.birthTime,
-  birthPlace: lead.birthPlace,
-  birthLatitude: lead.birthLatitude,
-  birthLongitude: lead.birthLongitude,
-  birthTimezone: lead.birthTimezone,
-  kundaliData: kundaliJson.data,
-});
+      const report = calculateRahuKetuReport({
+        fullName: lead.fullName,
+        dateOfBirth: lead.dateOfBirth,
+        birthTime: lead.birthTime,
+        birthPlace: lead.birthPlace,
+        kundaliData,
+      });
 
       setResult(report);
 
       await saveCalculatorLead({
         supabase,
-        sourceSlug: "moon-sign-calculator",
-        sourceTitle: "Moon Sign Calculator",
-        sourceUrl: "/free-tools/moon-sign-calculator",
+        sourceSlug: "rahu-ketu-calculator",
+        sourceTitle: "Rahu Ketu Calculator",
+        sourceUrl: "/free-tools/rahu-ketu-calculator",
         fullName: lead.fullName,
         phone: lead.phone,
         email: lead.email,
         gender: lead.gender,
         dateOfBirth: lead.dateOfBirth,
-        leadIntent: "Generated Moon Sign report",
+        leadIntent: "Generated Rahu Ketu report",
         inputData: {
           date_of_birth: lead.dateOfBirth,
           birth_time: lead.birthTime,
@@ -90,10 +99,12 @@ const report = calculateMoonSignReport({
           birth_timezone: lead.birthTimezone,
         },
         resultData: {
-          moon_sign: report.moonSign,
-          moon_sign_lord: report.moonSignLord,
-          element: report.element,
-          confidence: report.confidence,
+          rahu_sign: report.rahuSign,
+          rahu_house: report.rahuHouse,
+          ketu_sign: report.ketuSign,
+          ketu_house: report.ketuHouse,
+          axis: report.axis,
+          status: report.status,
         },
       });
     } catch (err) {
@@ -113,24 +124,23 @@ const report = calculateMoonSignReport({
           </p>
 
           <h2 className="mt-3 font-display text-3xl text-[#5C3A57]">
-            Moon Sign Calculator
+            Rahu Ketu Calculator
           </h2>
 
           <p className="mt-4 leading-8 text-[#6F5B69]">
-            Calculate your Vedic Moon Sign using your birth date, birth time and
-            birth place. Moon Sign shows your emotional nature, mind pattern,
-            relationship needs and inner response style.
+            Calculate Rahu and Ketu placement from your Vedic birth chart and
+            understand your karmic desire, detachment pattern, axis lessons and
+            remedy.
           </p>
 
           <div className="mt-6 rounded-[1.5rem] border border-[#E6C89C]/40 bg-[#FFF9F4] p-5">
             <p className="text-sm uppercase tracking-[0.25em] text-[#B784A7]">
-              Accuracy Note
+              Calculation Method
             </p>
             <p className="mt-3 leading-7 text-[#5C3A57]">
-              Exact Moon Sign requires sidereal Moon longitude from an
-              astrology ephemeris/API. This calculator UI is prepared for that
-              integration and stores complete birth details for accurate
-              consultation follow-up.
+              This tool uses FreeAstroAPI Kundali data to extract Rahu and Ketu
+              signs and houses. Rahu and Ketu are always opposite each other and
+              form a karmic axis in the chart.
             </p>
           </div>
 
@@ -142,7 +152,7 @@ const report = calculateMoonSignReport({
               disabled={saving}
               className="rounded-full bg-[#5C3A57] px-8 py-3 text-sm font-medium text-[#F6EEE8] transition hover:bg-[#B784A7] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {saving ? "Calculating..." : "Calculate Moon Sign"}
+              {saving ? "Calculating..." : "Calculate Rahu Ketu"}
             </button>
 
             {error && (
@@ -157,11 +167,11 @@ const report = calculateMoonSignReport({
           {!result ? (
             <div className="flex h-full min-h-[360px] items-center justify-center rounded-[1.5rem] border border-dashed border-[#E6C89C]/60 bg-[#FFF9F4]/70 p-8 text-center">
               <p className="max-w-md leading-8 text-[#6F5B69]">
-                Your Moon Sign report will appear here after calculation.
+                Your Rahu Ketu report will appear here after calculation.
               </p>
             </div>
           ) : (
-            <MoonSignReportView result={result} />
+            <RahuKetuReportView result={result} />
           )}
         </div>
       </div>
@@ -169,55 +179,70 @@ const report = calculateMoonSignReport({
   );
 }
 
-function MoonSignReportView({ result }: { result: MoonSignReport }) {
+function RahuKetuReportView({ result }: { result: RahuKetuReport }) {
   return (
     <div className="space-y-8">
       <div className="rounded-[1.5rem] bg-[#FFF9F4] p-6 text-center">
         <p className="text-sm uppercase tracking-[0.25em] text-[#B784A7]">
-          Your Vedic Moon Sign
+          Rahu Ketu Axis
         </p>
 
-        <h3 className="mt-3 font-display text-6xl text-[#5C3A57]">
-          {result.moonSign}
+        <h3 className="mt-3 font-display text-5xl text-[#5C3A57]">
+          {result.rahuHouse} / {result.ketuHouse}
         </h3>
 
         <p className="mt-3 inline-flex rounded-full bg-[#E6C89C]/30 px-4 py-2 text-sm font-medium text-[#5C3A57]">
-          Moon Sign Lord: {result.moonSignLord}
+          Rahu in {result.rahuSign} • Ketu in {result.ketuSign}
         </p>
 
-        <p className="mt-5 leading-8 text-[#6F5B69]">{result.resultMeaning}</p>
+        <p className="mt-5 leading-8 text-[#6F5B69]">{result.meaning}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <MiniCard title="Element" value={result.element} />
-        <MiniCard title="Nature" value={result.nature} />
-        <MiniCard title="Status" value={result.confidence} />
+        <MiniCard title="Rahu" value={`${result.rahuSign}, H${result.rahuHouse}`} />
+        <MiniCard title="Ketu" value={`${result.ketuSign}, H${result.ketuHouse}`} />
+        <MiniCard title="Status" value={result.status} />
       </div>
 
       <ResultBlock title="Input Summary">
         <div className="space-y-3 text-[#6F5B69]">
-          <p><b className="text-[#5C3A57]">Name:</b> {result.fullName}</p>
-          <p><b className="text-[#5C3A57]">DOB:</b> {formatDob(result.dateOfBirth)}</p>
-          <p><b className="text-[#5C3A57]">Birth Time:</b> {result.birthTime}</p>
-          <p><b className="text-[#5C3A57]">Birth Place:</b> {result.birthPlace}</p>
+          <p>
+            <b className="text-[#5C3A57]">Name:</b> {result.fullName}
+          </p>
+          <p>
+            <b className="text-[#5C3A57]">DOB:</b>{" "}
+            {formatDob(result.dateOfBirth)}
+          </p>
+          <p>
+            <b className="text-[#5C3A57]">Birth Time:</b> {result.birthTime}
+          </p>
+          <p>
+            <b className="text-[#5C3A57]">Birth Place:</b> {result.birthPlace}
+          </p>
         </div>
       </ResultBlock>
 
       <ResultBlock title="How It Is Calculated">
         <p className="leading-8 text-[#6F5B69]">{result.howCalculated}</p>
-        <p className="mt-4 leading-8 text-[#5C3A57]">
-          <b>Data used:</b> {result.calculatedFrom}
-        </p>
       </ResultBlock>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <InsightCard title="Emotional Pattern" text={result.emotionalPattern} />
-        <InsightCard title="Career Pattern" text={result.careerPattern} />
+        <InsightCard title="Rahu Meaning" text={result.rahuMeaning} />
+        <InsightCard title="Ketu Meaning" text={result.ketuMeaning} />
+      </div>
+
+      <ResultBlock title="Karmic Lesson">
+        <p className="leading-8 text-[#6F5B69]">{result.karmicLesson}</p>
+      </ResultBlock>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <InsightCard title="Career Impact" text={result.careerImpact} />
+        <InsightCard title="Money Impact" text={result.moneyImpact} />
         <InsightCard
-          title="Relationship Pattern"
-          text={result.relationshipPattern}
+          title="Relationship Impact"
+          text={result.relationshipImpact}
         />
-        <InsightCard title="Remedy" text={result.remedy} />
+        <InsightCard title="One Serious Remedy" text={result.remedy} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -232,16 +257,16 @@ function MoonSignReportView({ result }: { result: MoonSignReport }) {
       </p>
 
       <div className="rounded-[1.5rem] bg-[#5C3A57] p-6 text-center text-white">
-        <h3 className="font-display text-2xl">Want exact Moon Sign reading?</h3>
+        <h3 className="font-display text-2xl">Want exact Rahu Ketu guidance?</h3>
         <p className="mt-3 text-sm leading-7 text-[#F6EEE8]">
-          For accurate Moon Sign, Nakshatra, Dasha, remedies and emotional
-          guidance, book a personalised consultation.
+          Rahu Ketu results depend on sign, house, aspects, conjunctions and
+          Dasha. Book a personalised reading for exact karmic guidance.
         </p>
         <Link
-          href="/book?service=moon-sign-consultation"
+          href="/book?service=rahu-ketu-consultation"
           className="mt-5 inline-flex rounded-full bg-white px-6 py-3 text-sm font-medium text-[#5C3A57]"
         >
-          Book Moon Sign Consultation
+          Book Rahu Ketu Consultation
         </Link>
       </div>
     </div>

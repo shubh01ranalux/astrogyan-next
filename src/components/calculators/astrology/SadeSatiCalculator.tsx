@@ -2,25 +2,36 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import PlaceSearchInput from "@/components/forms/PlaceSearchInput";
 import AstrologyLeadFields, {
   getAstrologyLeadData,
 } from "@/components/calculators/common/AstrologyLeadFields";
 import { createClient } from "@/lib/supabase/client";
 import { saveCalculatorLead } from "@/lib/calculators/shared/save-calculator-lead";
 import {
-  calculateKundliMatchingReport,
-  type KundliMatchingReport,
-} from "@/lib/calculators/astrology/kundli-matching";
+  calculateSadeSatiReport,
+  type SadeSatiReport,
+} from "@/lib/calculators/astrology/sade-sati";
+
+function getTodayDate() {
+  const now = new Date();
+  return now.toISOString().slice(0, 10);
+}
+
+function getCurrentTime() {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, "0")}:${String(
+    now.getMinutes()
+  ).padStart(2, "0")}`;
+}
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export default function KundliMatchingCalculator() {
+export default function SadeSatiCalculator() {
   const supabase = createClient();
 
-  const [result, setResult] = useState<KundliMatchingReport | null>(null);
+  const [result, setResult] = useState<SadeSatiReport | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -60,23 +71,11 @@ export default function KundliMatchingCalculator() {
       const formData = new FormData(e.currentTarget);
       const lead = getAstrologyLeadData(formData);
 
-      const partnerName = String(formData.get("partner_name") || "");
-      const partnerDob = String(formData.get("partner_date_of_birth") || "");
-      const partnerTime = String(formData.get("partner_birth_time") || "");
-      const partnerPlace = String(formData.get("birth_place") || "");
-      const partnerLat = Number(formData.get("birth_latitude") || "");
-      const partnerLon = Number(formData.get("birth_longitude") || "");
-      const partnerTimezone = Number(formData.get("birth_timezone") || "5.5");
-
       if (!lead.birthLatitude || !lead.birthLongitude) {
-        throw new Error("Please select Partner 1 birth place from suggestions.");
+        throw new Error("Please select a birth place from the suggestions.");
       }
 
-      if (!partnerName || !partnerDob || !partnerTime || !partnerLat || !partnerLon) {
-        throw new Error("Please enter and select complete Partner 2 birth details.");
-      }
-
-      const partner1KundaliData = await fetchKundali({
+      const natalKundaliData = await fetchKundali({
         name: lead.fullName,
         birthDate: lead.dateOfBirth,
         birthTime: lead.birthTime,
@@ -88,63 +87,52 @@ export default function KundliMatchingCalculator() {
 
       await wait(1200);
 
-      const partner2KundaliData = await fetchKundali({
-        name: partnerName,
-        birthDate: partnerDob,
-        birthTime: partnerTime,
-        birthPlace: partnerPlace,
-        latitude: partnerLat,
-        longitude: partnerLon,
-        timezone: partnerTimezone,
+      const transitKundaliData = await fetchKundali({
+        name: lead.fullName,
+        birthDate: getTodayDate(),
+        birthTime: getCurrentTime(),
+        birthPlace: lead.birthPlace,
+        latitude: lead.birthLatitude,
+        longitude: lead.birthLongitude,
+        timezone: lead.birthTimezone,
       });
 
-      const report = calculateKundliMatchingReport({
-        partner1Name: lead.fullName,
-        partner1KundaliData,
-        partner2Name: partnerName,
-        partner2KundaliData,
+      const report = calculateSadeSatiReport({
+        fullName: lead.fullName,
+        dateOfBirth: lead.dateOfBirth,
+        birthTime: lead.birthTime,
+        birthPlace: lead.birthPlace,
+        natalKundaliData,
+        transitKundaliData,
       });
 
       setResult(report);
 
       await saveCalculatorLead({
         supabase,
-        sourceSlug: "kundli-matching-calculator",
-        sourceTitle: "Kundli Matching Calculator",
-        sourceUrl: "/free-tools/kundli-matching-calculator",
+        sourceSlug: "sade-sati-calculator",
+        sourceTitle: "Sade Sati Calculator",
+        sourceUrl: "/free-tools/sade-sati-calculator",
         fullName: lead.fullName,
         phone: lead.phone,
         email: lead.email,
         gender: lead.gender,
         dateOfBirth: lead.dateOfBirth,
-        leadIntent: "Generated Kundli Matching report",
+        leadIntent: "Generated Sade Sati report",
         inputData: {
-          partner_1: {
-            name: lead.fullName,
-            date_of_birth: lead.dateOfBirth,
-            birth_time: lead.birthTime,
-            birth_place: lead.birthPlace,
-            birth_latitude: lead.birthLatitude,
-            birth_longitude: lead.birthLongitude,
-            birth_timezone: lead.birthTimezone,
-          },
-          partner_2: {
-            name: partnerName,
-            date_of_birth: partnerDob,
-            birth_time: partnerTime,
-            birth_place: partnerPlace,
-            birth_latitude: partnerLat,
-            birth_longitude: partnerLon,
-            birth_timezone: partnerTimezone,
-          },
+          date_of_birth: lead.dateOfBirth,
+          birth_time: lead.birthTime,
+          birth_place: lead.birthPlace,
+          birth_latitude: lead.birthLatitude,
+          birth_longitude: lead.birthLongitude,
+          birth_timezone: lead.birthTimezone,
         },
         resultData: {
-          score: report.score,
-          title: report.title,
-          partner_1_moon_sign: report.partner1.moonSign,
-          partner_1_nakshatra: report.partner1.nakshatra,
-          partner_2_moon_sign: report.partner2.moonSign,
-          partner_2_nakshatra: report.partner2.nakshatra,
+          moon_sign: report.moonSign,
+          saturn_sign: report.saturnSign,
+          house_from_moon: report.houseFromMoon,
+          is_active: report.isActive,
+          phase: report.phase,
           status: report.status,
         },
       });
@@ -165,62 +153,34 @@ export default function KundliMatchingCalculator() {
           </p>
 
           <h2 className="mt-3 font-display text-3xl text-[#5C3A57]">
-            Kundli Matching Calculator
+            Sade Sati Calculator
           </h2>
 
           <p className="mt-4 leading-8 text-[#6F5B69]">
-            Match two Kundlis using Moon sign and Nakshatra data from Vedic
-            birth charts. This supports all partner combinations and does not
-            restrict matching by gender.
+            Check whether your Sade Sati is active by comparing your natal Moon
+            sign with Saturn’s current transit sign using Vedic calculation.
           </p>
 
-          <form onSubmit={handleCalculate} className="mt-6 space-y-7">
-            <div>
-              <p className="mb-4 font-display text-2xl text-[#5C3A57]">
-                Partner 1 Details
-              </p>
-              <AstrologyLeadFields />
-            </div>
+          <div className="mt-6 rounded-[1.5rem] border border-[#E6C89C]/40 bg-[#FFF9F4] p-5">
+            <p className="text-sm uppercase tracking-[0.25em] text-[#B784A7]">
+              Calculation Method
+            </p>
+            <p className="mt-3 leading-7 text-[#5C3A57]">
+              This tool uses your birth chart to find your Moon sign and a
+              current transit chart to find Saturn’s present sign. Sade Sati is
+              active when Saturn is in the 12th, 1st or 2nd sign from your Moon.
+            </p>
+          </div>
 
-            <div className="rounded-[1.5rem] border border-[#E6C89C]/40 bg-[#FFF9F4] p-5">
-              <p className="mb-4 font-display text-2xl text-[#5C3A57]">
-                Partner 2 Details
-              </p>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <input
-                  name="partner_name"
-                  className="field w-full"
-                  placeholder="Partner 2 Full Name"
-                  required
-                />
-
-                <input
-                  name="partner_date_of_birth"
-                  type="date"
-                  className="field w-full"
-                  required
-                />
-
-                <input
-                  name="partner_birth_time"
-                  type="time"
-                  className="field w-full"
-                  required
-                />
-
-                <div className="sm:col-span-2">
-                  <PlaceSearchInput />
-                </div>
-              </div>
-            </div>
+          <form onSubmit={handleCalculate} className="mt-6 space-y-5">
+            <AstrologyLeadFields />
 
             <button
               type="submit"
               disabled={saving}
               className="rounded-full bg-[#5C3A57] px-8 py-3 text-sm font-medium text-[#F6EEE8] transition hover:bg-[#B784A7] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {saving ? "Matching..." : "Match Kundlis"}
+              {saving ? "Calculating..." : "Calculate Sade Sati"}
             </button>
 
             {error && (
@@ -235,11 +195,11 @@ export default function KundliMatchingCalculator() {
           {!result ? (
             <div className="flex h-full min-h-[360px] items-center justify-center rounded-[1.5rem] border border-dashed border-[#E6C89C]/60 bg-[#FFF9F4]/70 p-8 text-center">
               <p className="max-w-md leading-8 text-[#6F5B69]">
-                Your Kundli matching report will appear here after calculation.
+                Your Sade Sati report will appear here after calculation.
               </p>
             </div>
           ) : (
-            <KundliMatchingReportView result={result} />
+            <SadeSatiReportView result={result} />
           )}
         </div>
       </div>
@@ -247,58 +207,81 @@ export default function KundliMatchingCalculator() {
   );
 }
 
-function KundliMatchingReportView({
-  result,
-}: {
-  result: KundliMatchingReport;
-}) {
+function SadeSatiReportView({ result }: { result: SadeSatiReport }) {
   return (
     <div className="space-y-8">
       <div className="rounded-[1.5rem] bg-[#FFF9F4] p-6 text-center">
         <p className="text-sm uppercase tracking-[0.25em] text-[#B784A7]">
-          Kundli Matching Score
+          Sade Sati Status
         </p>
 
-        <h3 className="mt-3 font-display text-7xl text-[#5C3A57]">
-          {result.score}%
+        <h3 className="mt-3 font-display text-4xl text-[#5C3A57]">
+          {result.title}
         </h3>
 
-        <p className="mt-2 font-display text-3xl text-[#5C3A57]">
-          {result.title}
+        <p
+          className={`mt-4 inline-flex rounded-full px-4 py-2 text-sm font-medium ${
+            result.isActive
+              ? "bg-amber-100 text-amber-800"
+              : "bg-emerald-100 text-emerald-800"
+          }`}
+        >
+          {result.isActive ? "Active" : "Not Active"} • {result.phase}
         </p>
 
-        <p className="mt-5 leading-8 text-[#6F5B69]">{result.summary}</p>
+        <p className="mt-5 leading-8 text-[#6F5B69]">{result.meaning}</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <PartnerCard title="Partner 1" partner={result.partner1} />
-        <PartnerCard title="Partner 2" partner={result.partner2} />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <MiniCard title="Moon Sign" value={result.moonSign} />
+        <MiniCard title="Saturn Sign" value={result.saturnSign} />
+        <MiniCard title="Status" value={result.status} />
       </div>
+
+      <ResultBlock title="Input Summary">
+        <div className="space-y-3 text-[#6F5B69]">
+          <p>
+            <b className="text-[#5C3A57]">Name:</b> {result.fullName}
+          </p>
+          <p>
+            <b className="text-[#5C3A57]">DOB:</b>{" "}
+            {formatDob(result.dateOfBirth)}
+          </p>
+          <p>
+            <b className="text-[#5C3A57]">Birth Time:</b> {result.birthTime}
+          </p>
+          <p>
+            <b className="text-[#5C3A57]">Birth Place:</b> {result.birthPlace}
+          </p>
+        </div>
+      </ResultBlock>
 
       <ResultBlock title="How It Is Calculated">
         <p className="leading-8 text-[#6F5B69]">{result.howCalculated}</p>
+        <p className="mt-4 leading-8 text-[#5C3A57]">
+          Saturn is currently in the{" "}
+          <b>{result.houseFromMoon} house from your Moon sign</b>.
+        </p>
       </ResultBlock>
 
       <div className="grid gap-4 md:grid-cols-2">
+        <InsightCard title="Career Impact" text={result.careerImpact} />
+        <InsightCard title="Money Impact" text={result.moneyImpact} />
         <InsightCard
-          title="Mental Compatibility"
-          text={result.mentalCompatibility}
+          title="Relationship Impact"
+          text={result.relationshipImpact}
         />
-        <InsightCard
-          title="Emotional Compatibility"
-          text={result.emotionalCompatibility}
-        />
-        <InsightCard
-          title="Relationship Caution"
-          text={result.relationshipCaution}
-        />
-        <InsightCard title="One Serious Remedy" text={result.remedy} />
+        <InsightCard title="Health Impact" text={result.healthImpact} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <ListCard title="What To Do" items={result.whatToDo} />
         <ListCard title="What To Avoid" items={result.whatToAvoid} />
       </div>
+
+      <ResultBlock title="One Serious Remedy">
+        <p className="leading-8 text-[#5C3A57]">{result.remedy}</p>
+      </ResultBlock>
 
       <p className="rounded-2xl bg-[#FFF9F4] p-4 text-sm leading-7 text-[#6F5B69]">
         This is an automated Vedic astrology report based on the birth details
@@ -307,41 +290,32 @@ function KundliMatchingReportView({
       </p>
 
       <div className="rounded-[1.5rem] bg-[#5C3A57] p-6 text-center text-white">
-        <h3 className="font-display text-2xl">
-          Want full Kundli matching?
-        </h3>
+        <h3 className="font-display text-2xl">Want exact Sade Sati guidance?</h3>
         <p className="mt-3 text-sm leading-7 text-[#F6EEE8]">
-          Marriage and relationship matching should verify Guna Milan, Manglik,
-          7th house, Venus, Jupiter, Navamsa and Dasha compatibility.
+          Sade Sati results depend on your full chart, Saturn strength, Moon
+          condition, Dasha and current transits. Book a personalised reading for
+          accurate guidance.
         </p>
         <Link
-          href="/book?service=kundli-matching-consultation"
+          href="/book?service=sade-sati-consultation"
           className="mt-5 inline-flex rounded-full bg-white px-6 py-3 text-sm font-medium text-[#5C3A57]"
         >
-          Book Kundli Matching Consultation
+          Book Sade Sati Consultation
         </Link>
       </div>
     </div>
   );
 }
 
-function PartnerCard({
-  title,
-  partner,
-}: {
-  title: string;
-  partner: { name: string; moonSign: string; nakshatra: string };
-}) {
+function MiniCard({ title, value }: { title: string; value: string | number }) {
   return (
-    <div className="rounded-[1.5rem] border border-[#E6C89C]/40 bg-[#FFF9F4] p-5">
-      <p className="text-xs uppercase tracking-[0.25em] text-[#B784A7]">
+    <div className="rounded-2xl border border-[#E6C89C]/40 bg-[#FFF9F4] p-4 text-center">
+      <p className="text-xs uppercase tracking-[0.2em] text-[#B784A7]">
         {title}
       </p>
-      <h3 className="mt-3 font-display text-3xl text-[#5C3A57]">
-        {partner.name}
-      </h3>
-      <p className="mt-3 text-[#6F5B69]">Moon Sign: {partner.moonSign}</p>
-      <p className="mt-2 text-[#6F5B69]">Nakshatra: {partner.nakshatra}</p>
+      <p className="mt-2 break-words font-display text-2xl text-[#5C3A57]">
+        {value}
+      </p>
     </div>
   );
 }
@@ -386,4 +360,9 @@ function ListCard({ title, items }: { title: string; items: string[] }) {
       </div>
     </div>
   );
+}
+
+function formatDob(dob: string) {
+  const [year, month, day] = dob.split("-");
+  return `${day}/${month}/${year}`;
 }

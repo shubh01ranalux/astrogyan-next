@@ -8,14 +8,14 @@ import AstrologyLeadFields, {
 import { createClient } from "@/lib/supabase/client";
 import { saveCalculatorLead } from "@/lib/calculators/shared/save-calculator-lead";
 import {
-  calculateMoonSignReport,
-  type MoonSignReport,
-} from "@/lib/calculators/astrology/moonsign";
+  calculateNakshatraReport,
+  type NakshatraReport,
+} from "@/lib/calculators/astrology/nakshatra";
 
-export default function MoonSignCalculator() {
+export default function NakshatraCalculator() {
   const supabase = createClient();
 
-  const [result, setResult] = useState<MoonSignReport | null>(null);
+  const [result, setResult] = useState<NakshatraReport | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -57,7 +57,7 @@ if (!kundaliJson.ok) {
   );
 }
 
-const report = calculateMoonSignReport({
+const report = calculateNakshatraReport({
   fullName: lead.fullName,
   dateOfBirth: lead.dateOfBirth,
   birthTime: lead.birthTime,
@@ -72,15 +72,15 @@ const report = calculateMoonSignReport({
 
       await saveCalculatorLead({
         supabase,
-        sourceSlug: "moon-sign-calculator",
-        sourceTitle: "Moon Sign Calculator",
-        sourceUrl: "/free-tools/moon-sign-calculator",
+        sourceSlug: "nakshatra-calculator",
+        sourceTitle: "Nakshatra Calculator",
+        sourceUrl: "/free-tools/nakshatra-calculator",
         fullName: lead.fullName,
         phone: lead.phone,
         email: lead.email,
         gender: lead.gender,
         dateOfBirth: lead.dateOfBirth,
-        leadIntent: "Generated Moon Sign report",
+        leadIntent: "Generated Nakshatra report",
         inputData: {
           date_of_birth: lead.dateOfBirth,
           birth_time: lead.birthTime,
@@ -90,9 +90,10 @@ const report = calculateMoonSignReport({
           birth_timezone: lead.birthTimezone,
         },
         resultData: {
-          moon_sign: report.moonSign,
-          moon_sign_lord: report.moonSignLord,
-          element: report.element,
+          nakshatra: report.nakshatra,
+          pada: report.pada,
+          lord: report.lord,
+          deity: report.deity,
           confidence: report.confidence,
         },
       });
@@ -113,13 +114,13 @@ const report = calculateMoonSignReport({
           </p>
 
           <h2 className="mt-3 font-display text-3xl text-[#5C3A57]">
-            Moon Sign Calculator
+            Nakshatra Calculator
           </h2>
 
           <p className="mt-4 leading-8 text-[#6F5B69]">
-            Calculate your Vedic Moon Sign using your birth date, birth time and
-            birth place. Moon Sign shows your emotional nature, mind pattern,
-            relationship needs and inner response style.
+            Calculate your birth Nakshatra using birth date, birth time and
+            birth place. Nakshatra reveals your mind pattern, nature, instincts,
+            talents and karmic tendencies.
           </p>
 
           <div className="mt-6 rounded-[1.5rem] border border-[#E6C89C]/40 bg-[#FFF9F4] p-5">
@@ -127,10 +128,9 @@ const report = calculateMoonSignReport({
               Accuracy Note
             </p>
             <p className="mt-3 leading-7 text-[#5C3A57]">
-              Exact Moon Sign requires sidereal Moon longitude from an
-              astrology ephemeris/API. This calculator UI is prepared for that
-              integration and stores complete birth details for accurate
-              consultation follow-up.
+              Exact Nakshatra requires sidereal Moon longitude from an
+              astrology ephemeris/API. This page is ready for API integration
+              and stores complete birth details for accurate consultation.
             </p>
           </div>
 
@@ -142,7 +142,7 @@ const report = calculateMoonSignReport({
               disabled={saving}
               className="rounded-full bg-[#5C3A57] px-8 py-3 text-sm font-medium text-[#F6EEE8] transition hover:bg-[#B784A7] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {saving ? "Calculating..." : "Calculate Moon Sign"}
+              {saving ? "Calculating..." : "Calculate Nakshatra"}
             </button>
 
             {error && (
@@ -157,11 +157,11 @@ const report = calculateMoonSignReport({
           {!result ? (
             <div className="flex h-full min-h-[360px] items-center justify-center rounded-[1.5rem] border border-dashed border-[#E6C89C]/60 bg-[#FFF9F4]/70 p-8 text-center">
               <p className="max-w-md leading-8 text-[#6F5B69]">
-                Your Moon Sign report will appear here after calculation.
+                Your Nakshatra report will appear here after calculation.
               </p>
             </div>
           ) : (
-            <MoonSignReportView result={result} />
+            <NakshatraReportView result={result} />
           )}
         </div>
       </div>
@@ -169,53 +169,63 @@ const report = calculateMoonSignReport({
   );
 }
 
-function MoonSignReportView({ result }: { result: MoonSignReport }) {
+function NakshatraReportView({ result }: { result: NakshatraReport }) {
   return (
     <div className="space-y-8">
       <div className="rounded-[1.5rem] bg-[#FFF9F4] p-6 text-center">
         <p className="text-sm uppercase tracking-[0.25em] text-[#B784A7]">
-          Your Vedic Moon Sign
+          Your Birth Nakshatra
         </p>
 
         <h3 className="mt-3 font-display text-6xl text-[#5C3A57]">
-          {result.moonSign}
+          {result.nakshatra}
         </h3>
 
         <p className="mt-3 inline-flex rounded-full bg-[#E6C89C]/30 px-4 py-2 text-sm font-medium text-[#5C3A57]">
-          Moon Sign Lord: {result.moonSignLord}
+          Pada {result.pada} • Lord {result.lord}
         </p>
 
-        <p className="mt-5 leading-8 text-[#6F5B69]">{result.resultMeaning}</p>
+        <p className="mt-5 leading-8 text-[#6F5B69]">{result.meaning}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <MiniCard title="Element" value={result.element} />
-        <MiniCard title="Nature" value={result.nature} />
+        <MiniCard title="Deity" value={result.deity} />
+        <MiniCard title="Symbol" value={result.symbol} />
         <MiniCard title="Status" value={result.confidence} />
       </div>
 
       <ResultBlock title="Input Summary">
         <div className="space-y-3 text-[#6F5B69]">
-          <p><b className="text-[#5C3A57]">Name:</b> {result.fullName}</p>
-          <p><b className="text-[#5C3A57]">DOB:</b> {formatDob(result.dateOfBirth)}</p>
-          <p><b className="text-[#5C3A57]">Birth Time:</b> {result.birthTime}</p>
-          <p><b className="text-[#5C3A57]">Birth Place:</b> {result.birthPlace}</p>
+          <p>
+            <b className="text-[#5C3A57]">Name:</b> {result.fullName}
+          </p>
+          <p>
+            <b className="text-[#5C3A57]">DOB:</b>{" "}
+            {formatDob(result.dateOfBirth)}
+          </p>
+          <p>
+            <b className="text-[#5C3A57]">Birth Time:</b> {result.birthTime}
+          </p>
+          <p>
+            <b className="text-[#5C3A57]">Birth Place:</b> {result.birthPlace}
+          </p>
         </div>
       </ResultBlock>
 
       <ResultBlock title="How It Is Calculated">
         <p className="leading-8 text-[#6F5B69]">{result.howCalculated}</p>
-        <p className="mt-4 leading-8 text-[#5C3A57]">
-          <b>Data used:</b> {result.calculatedFrom}
-        </p>
+      </ResultBlock>
+
+      <ResultBlock title="Nakshatra Nature">
+        <p className="leading-8 text-[#6F5B69]">{result.nature}</p>
       </ResultBlock>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <InsightCard title="Emotional Pattern" text={result.emotionalPattern} />
-        <InsightCard title="Career Pattern" text={result.careerPattern} />
+        <InsightCard title="Personality Pattern" text={result.personality} />
+        <InsightCard title="Career Pattern" text={result.career} />
         <InsightCard
           title="Relationship Pattern"
-          text={result.relationshipPattern}
+          text={result.relationship}
         />
         <InsightCard title="Remedy" text={result.remedy} />
       </div>
@@ -232,16 +242,18 @@ function MoonSignReportView({ result }: { result: MoonSignReport }) {
       </p>
 
       <div className="rounded-[1.5rem] bg-[#5C3A57] p-6 text-center text-white">
-        <h3 className="font-display text-2xl">Want exact Moon Sign reading?</h3>
+        <h3 className="font-display text-2xl">
+          Want exact Nakshatra reading?
+        </h3>
         <p className="mt-3 text-sm leading-7 text-[#F6EEE8]">
-          For accurate Moon Sign, Nakshatra, Dasha, remedies and emotional
-          guidance, book a personalised consultation.
+          For accurate Nakshatra, Pada, Dasha, compatibility and remedies, book
+          a personalised consultation.
         </p>
         <Link
-          href="/book?service=moon-sign-consultation"
+          href="/book?service=nakshatra-consultation"
           className="mt-5 inline-flex rounded-full bg-white px-6 py-3 text-sm font-medium text-[#5C3A57]"
         >
-          Book Moon Sign Consultation
+          Book Nakshatra Consultation
         </Link>
       </div>
     </div>
