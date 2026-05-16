@@ -5,12 +5,14 @@ import type { NavigationItem } from "@/lib/navigation";
 type FooterProps = {
   title?: string;
   subtitle?: string;
+  logo?: string;
   navigationItems?: NavigationItem[];
 };
 
 export default function Footer({
   title = "AstroGyan",
   subtitle = "Ancient Vedic Wisdom for Modern Life",
+  logo,
   navigationItems = [],
 }: FooterProps) {
   const footerItems = navigationItems.filter(
