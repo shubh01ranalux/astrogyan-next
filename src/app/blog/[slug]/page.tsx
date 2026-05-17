@@ -20,6 +20,29 @@ function getBlogExcerpt(blog: any) {
   );
 }
 
+function normalizeCtaUrl(url?: string | null) {
+  if (!url) return "#";
+
+  const clean = url.trim();
+
+  if (
+    clean.startsWith("http://") ||
+    clean.startsWith("https://")
+  ) {
+    return clean;
+  }
+
+  if (clean.startsWith("www.")) {
+    return `https://${clean}`;
+  }
+
+  if (clean.startsWith("/")) {
+    return clean;
+  }
+
+  return `/${clean}`;
+}
+
 function renderInlineText(text: string) {
   const parts = text.split(/(\[.*?\]\(.*?\)|https?:\/\/[^\s]+)/g);
 
@@ -227,7 +250,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     )}
 
     <a
-      href={blog.cta_url}
+      href={normalizeCtaUrl(blog.cta_url)}
       target="_blank"
       rel="noopener noreferrer"
       className="mt-5 inline-flex rounded-full bg-white px-6 py-3 text-sm font-medium text-[#5C3A57] transition hover:bg-[#E6C89C]"
