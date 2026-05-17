@@ -21,21 +21,35 @@ function getBlogExcerpt(blog: any) {
 }
 
 function renderInlineText(text: string) {
-  const parts = text.split(/(\[.*?\]\(.*?\))/g);
+  const parts = text.split(/(\[.*?\]\(.*?\)|https?:\/\/[^\s]+)/g);
 
   return parts.map((part, index) => {
-    const match = part.match(/\[(.*?)\]\((.*?)\)/);
+    const markdownMatch = part.match(/\[(.*?)\]\((.*?)\)/);
 
-    if (match) {
+    if (markdownMatch) {
       return (
         <a
           key={index}
-          href={match[2]}
+          href={markdownMatch[2]}
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold text-[#B784A7] underline underline-offset-4 hover:text-[#5C3A57]"
         >
-          {match[1]}
+          {markdownMatch[1]}
+        </a>
+      );
+    }
+
+    if (/^https?:\/\//.test(part)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="break-words font-semibold text-[#B784A7] underline underline-offset-4 hover:text-[#5C3A57]"
+        >
+          {part}
         </a>
       );
     }
@@ -200,21 +214,28 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
             {renderBlogContent(blog.content || "")}
           </div>
 
-          <div className="mt-12 rounded-[2rem] border border-[#E6C89C]/40 bg-[#5C3A57] p-7 text-center text-white">
-            <h3 className="font-display text-3xl">
-              Want to check this in your own Kundli?
-            </h3>
+{blog.cta_title && blog.cta_url && (
+  <div className="mt-12 rounded-[2rem] border border-[#E6C89C]/40 bg-[#5C3A57] p-7 text-center text-white">
+    <h3 className="font-display text-3xl">
+      {blog.cta_title}
+    </h3>
 
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[#F6EEE8]">
-              You can generate your Kundli for free on AstroGyan and explore
-              your planetary placements before booking a detailed consultation.
-            </p>
+    {blog.cta_description && (
+      <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[#F6EEE8]">
+        {blog.cta_description}
+      </p>
+    )}
 
-            <p className="mt-4 break-words text-sm text-[#E6C89C]">
-              https://www.astrogyanbynamansharma.com/free-tools/kundali-report
-            </p>
-          </div>
-        </div>
+    <a
+      href={blog.cta_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-5 inline-flex rounded-full bg-white px-6 py-3 text-sm font-medium text-[#5C3A57] transition hover:bg-[#E6C89C]"
+    >
+      {blog.cta_label || "Learn More"}
+    </a>
+  </div>
+)}        </div>
       </article>
 
       <Footer />

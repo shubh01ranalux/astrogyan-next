@@ -15,6 +15,10 @@ type Blog = {
   category: string | null;
   tags: string[] | null;
   is_published: boolean;
+  cta_title: string | null;
+  cta_description: string | null;
+  cta_label: string | null;
+  cta_url: string | null;
 };
 
 const emptyForm = {
@@ -26,6 +30,10 @@ const emptyForm = {
   category: "Astrology",
   tags: "",
   is_published: false,
+  cta_title: "",
+  cta_description: "",
+  cta_label: "",
+  cta_url: "",
 };
 
 export default function AdminBlogsPage() {
@@ -53,7 +61,7 @@ export default function AdminBlogsPage() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (!error && data) setBlogs(data);
+    if (!error && data) setBlogs(data as Blog[]);
 
     setLoading(false);
   }
@@ -74,9 +82,16 @@ export default function AdminBlogsPage() {
       cover_image: form.cover_image,
       category: form.category,
       tags: form.tags
-        ? form.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
+        ? form.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean)
         : [],
       is_published: form.is_published,
+      cta_title: form.cta_title,
+      cta_description: form.cta_description,
+      cta_label: form.cta_label,
+      cta_url: form.cta_url,
       updated_at: new Date().toISOString(),
     };
 
@@ -103,6 +118,10 @@ export default function AdminBlogsPage() {
       category: blog.category || "Astrology",
       tags: blog.tags?.join(", ") || "",
       is_published: blog.is_published,
+      cta_title: blog.cta_title || "",
+      cta_description: blog.cta_description || "",
+      cta_label: blog.cta_label || "",
+      cta_url: blog.cta_url || "",
     });
   }
 
@@ -171,12 +190,10 @@ export default function AdminBlogsPage() {
             />
 
             <ImageUpload
-  value={form.cover_image}
-  onChange={(url) =>
-    setForm({ ...form, cover_image: url })
-  }
-  folder="blogs"
-/>
+              value={form.cover_image}
+              onChange={(url) => setForm({ ...form, cover_image: url })}
+              folder="blogs"
+            />
 
             <input
               className="field"
@@ -193,12 +210,61 @@ export default function AdminBlogsPage() {
             />
 
             <textarea
-              className="field min-h-72 resize-none rounded-[1.5rem]"
-              placeholder="Write blog content..."
+              className="field min-h-72 resize-none rounded-[0.4rem]"
+              placeholder="Write blog content. Use ## for headings, - for bullets, [text](link) for links."
               value={form.content}
               onChange={(e) => setForm({ ...form, content: e.target.value })}
               required
             />
+
+            <div className="rounded-[1.5rem] border border-[#E6C89C]/40 bg-white/70 p-5">
+              <h3 className="font-display text-2xl text-[#5C3A57]">
+                Blog CTA Section
+              </h3>
+
+              <p className="mt-2 text-sm text-[#6F5B69]">
+                Optional call-to-action shown at the end of this blog. Leave
+                empty if this blog does not need a CTA.
+              </p>
+
+              <div className="mt-5 grid gap-4">
+                <input
+                  className="field w-full"
+                  placeholder="CTA Title, e.g. Want to check this in your Kundli?"
+                  value={form.cta_title}
+                  onChange={(e) =>
+                    setForm({ ...form, cta_title: e.target.value })
+                  }
+                />
+
+                <textarea
+                  className="field min-h-28 w-full resize-none"
+                  placeholder="CTA Description"
+                  value={form.cta_description}
+                  onChange={(e) =>
+                    setForm({ ...form, cta_description: e.target.value })
+                  }
+                />
+
+                <input
+                  className="field w-full"
+                  placeholder="Button Label, e.g. Generate Free Kundli"
+                  value={form.cta_label}
+                  onChange={(e) =>
+                    setForm({ ...form, cta_label: e.target.value })
+                  }
+                />
+
+                <input
+                  className="field w-full"
+                  placeholder="CTA URL, e.g. /free-tools/kundali-report"
+                  value={form.cta_url}
+                  onChange={(e) =>
+                    setForm({ ...form, cta_url: e.target.value })
+                  }
+                />
+              </div>
+            </div>
 
             <label className="flex items-center gap-3 text-[#5C3A57]">
               <input
@@ -278,6 +344,12 @@ export default function AdminBlogsPage() {
                     <p className="mt-3 leading-7 text-[#6F5B69]">
                       {blog.excerpt || "No excerpt added."}
                     </p>
+
+                    {blog.cta_title && (
+                      <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[#B784A7]">
+                        CTA Added
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex shrink-0 flex-wrap gap-2">
@@ -310,4 +382,4 @@ export default function AdminBlogsPage() {
       </div>
     </AdminLayout>
   );
-}
+} 
