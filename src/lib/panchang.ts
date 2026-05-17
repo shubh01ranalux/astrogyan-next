@@ -16,8 +16,14 @@ export type DailyPanchang = {
   ai_message?: string | null;
   raw_data?: any;
   choghadiya?: Record<string, ChoghadiyaItem> | null;
-shubh_choghadiya?: string | null;
-ashubh_choghadiya?: string | null;
+  shubh_choghadiya?: string | null;
+  ashubh_choghadiya?: string | null;
+};
+
+type ChoghadiyaItem = {
+  name: string;
+  starts_at: string;
+  ends_at: string;
 };
 
 function getTodayInIndia(): string {
@@ -39,31 +45,34 @@ export function formatPanchangDate(dateString: string): string {
   }).format(new Date(`${dateString}T00:00:00+05:30`));
 }
 
-function formatStringTime(value: string): string {
-  const cleanValue = value.trim();
+function formatClockTime(value?: string | null): string {
+  if (!value) return "—";
 
-  const timeMatch = cleanValue.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  const clean = String(value).trim();
+  const match = clean.match(/^(\d{1,2}):(\d{2})(?::\d{2})?/);
 
-  if (timeMatch) {
-    let hour = Number(timeMatch[1]);
-    const minute = Number(timeMatch[2]);
+  if (!match) return clean;
 
-    if (hour >= 24) {
-      hour = hour - 24;
-    }
+  let hour = Number(match[1]);
+  const minute = match[2];
 
-    const date = new Date();
-    date.setHours(hour, minute, 0, 0);
+  const suffix = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
 
-    return new Intl.DateTimeFormat("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: "Asia/Kolkata",
-    }).format(date);
+  return `${String(hour).padStart(2, "0")}:${minute} ${suffix}`;
+}
+
+function formatDateTimeToTime(value?: string | null): string {
+  if (!value) return "—";
+
+  const cleanValue = String(value).trim();
+
+  if (/^\d{1,2}:\d{2}/.test(cleanValue)) {
+    return formatClockTime(cleanValue);
   }
 
-  const date = new Date(cleanValue);
+  const date = new Date(cleanValue.replace(" ", "T"));
 
   if (!Number.isNaN(date.getTime())) {
     return new Intl.DateTimeFormat("en-IN", {
@@ -74,27 +83,19 @@ function formatStringTime(value: string): string {
     }).format(date);
   }
 
-  return value;
+  return cleanValue;
 }
 
 function formatTime(value: any): string | null {
   if (!value) return null;
 
   if (typeof value === "string") {
-    return formatStringTime(value);
+    return formatClockTime(value);
   }
 
   if (typeof value === "object") {
     if ("hour" in value && "minute" in value) {
-      const date = new Date();
-      date.setHours(Number(value.hour), Number(value.minute), 0, 0);
-
-      return new Intl.DateTimeFormat("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-        timeZone: "Asia/Kolkata",
-      }).format(date);
+      return formatClockTime(`${value.hour}:${value.minute}`);
     }
 
     if ("start" in value && "end" in value) {
@@ -177,7 +178,7 @@ function formatRange(value: any): string {
   if (!value) return "—";
 
   if (typeof value === "string") {
-    return formatStringTime(value);
+    return formatClockTime(value);
   }
 
   if (value.start && value.end) {
@@ -191,31 +192,6 @@ function formatRange(value: any): string {
   return String(value);
 }
 
-type ChoghadiyaItem = {
-  name: string;
-  starts_at: string;
-  ends_at: string;
-};
-
-function formatDateTimeToTime(value?: string | null): string {
-  if (!value) return "—";
-
-  const cleanValue = String(value).trim();
-
-  const date = new Date(cleanValue.replace(" ", "T"));
-
-  if (!Number.isNaN(date.getTime())) {
-    return new Intl.DateTimeFormat("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-      timeZone: "Asia/Kolkata",
-    }).format(date);
-  }
-
-  return formatStringTime(cleanValue);
-}
-
 function formatChoghadiyaItem(item: ChoghadiyaItem): string {
   return `${item.name}: ${formatDateTimeToTime(
     item.starts_at
@@ -227,7 +203,6 @@ function getBestShubhChoghadiya(items: ChoghadiyaItem[]): string {
 
   for (const name of priority) {
     const match = items.find((item) => item.name === name);
-
     if (match) return formatChoghadiyaItem(match);
   }
 
@@ -239,7 +214,6 @@ function getWorstAshubhChoghadiya(items: ChoghadiyaItem[]): string {
 
   for (const name of priority) {
     const match = items.find((item) => item.name === name);
-
     if (match) return formatChoghadiyaItem(match);
   }
 
@@ -290,14 +264,14 @@ async function fetchMumbaiChoghadiyaFromApi() {
     return null;
   }
 
-const json = await response.json();
+  const json = await response.json();
 
-const parsed =
-  typeof json?.output === "string"
-    ? JSON.parse(json.output)
-    : json?.output || json;
+  const parsed =
+    typeof json?.output === "string"
+      ? JSON.parse(json.output)
+      : json?.output || json;
 
-const items = Object.values(parsed || {}) as ChoghadiyaItem[];
+  const items = Object.values(parsed || {}) as ChoghadiyaItem[];
 
   return {
     raw: parsed,
@@ -307,9 +281,7 @@ const items = Object.values(parsed || {}) as ChoghadiyaItem[];
   };
 }
 
-function getDynamicWeekdayMantra(
-  weekday?: string | null
-): string {
+function getDynamicWeekdayMantra(weekday?: string | null): string {
   const day = String(weekday || "").toLowerCase();
 
   const mantras = {
@@ -318,37 +290,23 @@ function getDynamicWeekdayMantra(
       "ॐ घृणि सूर्याय नमः।",
       "ॐ आदित्याय विद्महे दिवाकराय धीमहि।",
     ],
-
-    monday: [
-      "ॐ नमः शिवाय।",
-      "हर हर महादेव।",
-      "ॐ त्र्यम्बकं यजामहे।",
-    ],
-
+    monday: ["ॐ नमः शिवाय।", "हर हर महादेव।", "ॐ त्र्यम्बकं यजामहे।"],
     tuesday: [
       "ॐ हनुमते नमः।",
       "जय बजरंगबली।",
       "ॐ क्रां क्रीं क्रौं सः भौमाय नमः।",
     ],
-
-    wednesday: [
-      "ॐ गं गणपतये नमः।",
-      "वक्रतुंड महाकाय।",
-      "ॐ बुं बुधाय नमः।",
-    ],
-
+    wednesday: ["ॐ गं गणपतये नमः।", "वक्रतुंड महाकाय।", "ॐ बुं बुधाय नमः।"],
     thursday: [
       "ॐ गुरवे नमः।",
       "ॐ बृं बृहस्पतये नमः।",
       "गुरुर्ब्रह्मा गुरुर्विष्णुः।",
     ],
-
     friday: [
       "ॐ श्री महालक्ष्म्यै नमः।",
       "जय माता दी।",
       "ॐ श्रीं ह्रीं श्रीं महालक्ष्म्यै नमः।",
     ],
-
     saturday: [
       "ॐ शं शनैश्चराय नमः।",
       "ॐ प्रां प्रीं प्रौं सः शनैश्चराय नमः।",
@@ -357,9 +315,7 @@ function getDynamicWeekdayMantra(
   };
 
   const key = day as keyof typeof mantras;
-
   const selected = mantras[key] || mantras.monday;
-
   const today = new Date().getDate();
 
   return selected[today % selected.length];
@@ -424,8 +380,8 @@ async function fetchMumbaiPanchangFromApi() {
   ]);
 
   return {
-    sunrise: formatTime(data?.sunrise || data?.sun_rise),
-    sunset: formatTime(data?.sunset || data?.sun_set),
+    sunrise: formatClockTime(data?.sunrise),
+    sunset: formatClockTime(data?.sunset),
     tithi: getName(tithi),
     nakshatra: getName(nakshatra),
     rahu_kaal: formatRange(rahu),
@@ -437,7 +393,7 @@ async function fetchMumbaiPanchangFromApi() {
 export function parsePanchangDetails(panchang: DailyPanchang | null) {
   const raw = panchang?.raw_data || {};
   const data = raw?.output || raw?.data || raw;
-console.log(JSON.stringify(data, null, 2));
+
   const tithi = getFromPossibleKeys(data, ["tithi", "tithi_details"]);
   const nakshatra = getFromPossibleKeys(data, [
     "nakshatra",
@@ -449,23 +405,10 @@ console.log(JSON.stringify(data, null, 2));
     "karan",
     "karana_details",
   ]);
-
   const rahu = getFromPossibleKeys(data, [
     "rahu_kalam",
     "rahukaal",
     "rahu_kaal",
-  ]);
-
-  const shubh = getFromPossibleKeys(data, [
-    "shubh",
-    "shubh_choghadiya",
-    "auspicious_time",
-  ]);
-
-  const ashubh = getFromPossibleKeys(data, [
-    "ashubh",
-    "ashubh_choghadiya",
-    "inauspicious_time",
   ]);
 
   return {
@@ -475,73 +418,86 @@ console.log(JSON.stringify(data, null, 2));
 
     location: panchang?.location || "Mumbai, India",
 
-    sunrise: panchang?.sunrise || formatTime(data?.sunrise) || "—",
-    sunset: panchang?.sunset || formatTime(data?.sunset) || "—",
+    sunrise:
+      data?.sunrise ? formatClockTime(data.sunrise) : panchang?.sunrise || "—",
 
-    tithi: formatNameUptoThen(tithi) || panchang?.tithi || "—",
+    sunset:
+      data?.sunset ? formatClockTime(data.sunset) : panchang?.sunset || "—",
+
+    tithi: data?.tithi
+      ? `${data.tithi.name} upto ${formatClockTime(data.tithi.ends_at)}`
+      : panchang?.tithi || formatNameUptoThen(tithi),
 
     paksha:
-  data?.paksha?.name ||
-  data?.paksha ||
-  tithi?.paksha?.name ||
-  tithi?.paksha ||
-  tithi?.details?.paksha?.name ||
-  tithi?.details?.paksha ||
-  "—",
+      data?.tithi?.paksha ||
+      data?.paksha?.name ||
+      data?.paksha ||
+      tithi?.paksha?.name ||
+      tithi?.paksha ||
+      "—",
 
-moonsign:
-  data?.request_time_panchang?.moon_sign?.name ||
-  data?.moonsign?.name ||
-  data?.moon_sign?.name ||
-  data?.rashi?.name ||
-  data?.moon_rashi?.name ||
-  data?.moonsign ||
-  data?.moon_sign ||
-  data?.rashi ||
-  data?.moon_rashi ||
-  "—",
+    moonsign:
+      data?.request_time_panchang?.moon_sign?.name ||
+      data?.moonsign?.name ||
+      data?.moon_sign?.name ||
+      data?.rashi?.name ||
+      data?.moon_rashi?.name ||
+      data?.moonsign ||
+      data?.moon_sign ||
+      data?.rashi ||
+      data?.moon_rashi ||
+      "—",
 
-sunsign:
-  data?.request_time_panchang?.sun_sign?.name ||
-  data?.sunsign?.name ||
-  data?.sun_sign?.name ||
-  data?.surya_rashi?.name ||
-  data?.sunsign ||
-  data?.sun_sign ||
-  data?.surya_rashi ||
-  "—",
+    sunsign:
+      data?.request_time_panchang?.sun_sign?.name ||
+      data?.sunsign?.name ||
+      data?.sun_sign?.name ||
+      data?.surya_rashi?.name ||
+      data?.sunsign ||
+      data?.sun_sign ||
+      data?.surya_rashi ||
+      "—",
 
-nakshatra:
-  formatNameUptoThen(nakshatra) || panchang?.nakshatra || "—",
+    nakshatra: data?.nakshatra
+      ? `${data.nakshatra.name} upto ${formatClockTime(data.nakshatra.ends_at)}`
+      : panchang?.nakshatra || formatNameUptoThen(nakshatra),
 
-yoga: formatNameUptoThen(yoga),
+    yoga: data?.yoga
+      ? `${data.yoga.name} upto ${formatClockTime(data.yoga.ends_at)}`
+      : formatNameUptoThen(yoga),
 
-karana:
-  Array.isArray(data?.karanas)
-    ? data.karanas
-        .map((item: any) => formatNameUptoThen(item))
-        .join(" then ")
-    : formatNameUptoThen(
-        data?.request_time_panchang?.karana || karana
-      ),
+    karana: Array.isArray(data?.karanas)
+      ? data.karanas
+          .map((item: any, index: number) =>
+            `${index === 0 ? item.name : `then ${item.name}`} upto ${formatClockTime(
+              item.ends_at
+            )}`
+          )
+          .join(" ")
+      : formatNameUptoThen(data?.request_time_panchang?.karana || karana),
 
-shubh:
-  panchang?.shubh_choghadiya ||
-  (panchang?.choghadiya
-    ? getBestShubhChoghadiya(
-        Object.values(panchang.choghadiya) as ChoghadiyaItem[]
-      )
-    : "—"),
+    shubh:
+      panchang?.shubh_choghadiya ||
+      (panchang?.choghadiya
+        ? getBestShubhChoghadiya(
+            Object.values(panchang.choghadiya) as ChoghadiyaItem[]
+          )
+        : "—"),
 
-rahuKaal: panchang?.rahu_kaal || formatRange(rahu),
+    rahuKaal: data?.rahu_kalam
+      ? `${formatClockTime(data.rahu_kalam.start)} - ${formatClockTime(
+          data.rahu_kalam.end
+        )}`
+      : panchang?.rahu_kaal || formatRange(rahu),
 
-ashubh:
-  panchang?.ashubh_choghadiya ||
-  (panchang?.choghadiya
-    ? getWorstAshubhChoghadiya(
-        Object.values(panchang.choghadiya) as ChoghadiyaItem[]
-      )
-    : "—"),
+    ashubh:
+      panchang?.ashubh_choghadiya ||
+      (panchang?.choghadiya
+        ? getWorstAshubhChoghadiya(
+            Object.values(panchang.choghadiya) as ChoghadiyaItem[]
+          )
+        : "—"),
+
     goodFor:
       panchang?.ai_good_for && panchang.ai_good_for.length > 0
         ? panchang.ai_good_for
@@ -557,34 +513,28 @@ ashubh:
       panchang?.current_message ||
       "Today favors balanced spiritual and practical decisions.",
 
-      lunarMonth:
-  data?.lunar_month?.name ||
-  data?.lunar_month ||
-  "—",
+    lunarMonth: data?.lunar_month?.name || data?.lunar_month || "—",
 
-samvat:
-  data?.lunar_month?.vikram_samvat
-    ? String(data.lunar_month.vikram_samvat)
-    : "—",
+    samvat: data?.lunar_month?.vikram_samvat
+      ? String(data.lunar_month.vikram_samvat)
+      : "—",
 
-weekday:
-  data?.weekday?.name ||
-  data?.weekday ||
-  "—",
+    weekday: data?.weekday?.name || data?.weekday || "—",
 
-  choghadiyaList: panchang?.choghadiya
-  ? Object.values(panchang.choghadiya)
-      .filter((item: any) => item?.name)
-.map((item: any) =>
-  `${item.name}: ${formatDateTimeToTime(item?.starts_at)} - ${formatDateTimeToTime(item?.ends_at)}`
-)
-      .join("\n")
-  : "—",
+    choghadiyaList: panchang?.choghadiya
+      ? Object.values(panchang.choghadiya)
+          .filter((item: any) => item?.name)
+          .map(
+            (item: any) =>
+              `${item.name}: ${formatDateTimeToTime(
+                item?.starts_at
+              )} - ${formatDateTimeToTime(item?.ends_at)}`
+          )
+          .join("\n")
+      : "—",
 
- mantra: getDynamicWeekdayMantra(
-  data?.weekday?.name || data?.weekday
-),
-};
+    mantra: getDynamicWeekdayMantra(data?.weekday?.name || data?.weekday),
+  };
 }
 
 export async function upsertTodayPanchangFallback() {
@@ -614,8 +564,8 @@ export async function upsertTodayPanchangFallback() {
   const payload = {
     panchang_date: today,
     location: "Mumbai, India",
-    sunrise: apiData?.sunrise || "06:05 AM",
-    sunset: apiData?.sunset || "07:05 PM",
+    sunrise: apiData?.sunrise || "—",
+    sunset: apiData?.sunset || "—",
     tithi: apiData?.tithi || "Today’s Tithi",
     nakshatra: apiData?.nakshatra || "Today’s Nakshatra",
     rahu_kaal: apiData?.rahu_kaal || "Check full Panchang",
@@ -628,8 +578,8 @@ export async function upsertTodayPanchangFallback() {
     raw_data: apiData?.raw_data || {},
     updated_at: new Date().toISOString(),
     choghadiya: choghadiyaData?.raw || null,
-shubh_choghadiya: choghadiyaData?.shubh || "—",
-ashubh_choghadiya: choghadiyaData?.ashubh || "—",
+    shubh_choghadiya: choghadiyaData?.shubh || "—",
+    ashubh_choghadiya: choghadiyaData?.ashubh || "—",
   };
 
   const { data: savedData, error } = await supabase

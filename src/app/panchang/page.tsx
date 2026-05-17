@@ -63,7 +63,7 @@ export default async function PanchangPage() {
             </div>
 
             <p className="mt-8 text-2xl font-bold text-black">
-              ॐ श्री महालक्ष्म्यै नमः।
+              {details.mantra}
             </p>
 
             <p className="mt-3 text-sm uppercase tracking-[0.25em] text-[#B784A7]">
