@@ -42,6 +42,10 @@ export function createMetadata({
     alternates: {
       canonical: url,
     },
+    robots: {
+  index: true,
+  follow: true,
+},
     openGraph: {
       title: metaTitle,
       description: metaDescription,

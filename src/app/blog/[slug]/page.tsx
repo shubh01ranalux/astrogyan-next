@@ -185,8 +185,11 @@ function renderBlogContent(content: string) {
   });
 }
 
-export async function generateMetadata({ params }: BlogDetailPageProps) {
+export async function generateMetadata({
+  params,
+}: BlogDetailPageProps) {
   const { slug } = await params;
+
   const blog = await getBlogBySlug(slug);
 
   if (!blog) {
@@ -197,9 +200,18 @@ export async function generateMetadata({ params }: BlogDetailPageProps) {
     });
   }
 
+  const description =
+    blog.short_excerpt?.trim() ||
+    blog.excerpt?.trim() ||
+    blog.content
+      ?.replace(/[#>*_\-\n]/g, " ")
+      ?.replace(/\s+/g, " ")
+      ?.slice(0, 160) ||
+    "Read this AstroGyan astrology insight.";
+
   return createMetadata({
     title: blog.meta_title || blog.title,
-    description: getBlogExcerpt(blog),
+    description,
     path: `/blog/${blog.slug}`,
     image: blog.cover_image || undefined,
   });
