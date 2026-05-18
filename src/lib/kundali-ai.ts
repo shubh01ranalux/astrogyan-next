@@ -37,10 +37,27 @@ Nakshatra: ${nakshatra}
 
 House-wise placements:
 ${Object.entries(houses)
-  .map(
-    ([house, planets]) =>
-      `House ${house}: ${planets.join(", ") || "Empty"}`
-  )
+  .map(([house, data]: [string, any]) => {
+    const planetNames = Array.isArray(data)
+      ? data.join(", ")
+      : data?.planets?.length
+        ? data.planets
+            .map((planet: any) =>
+              typeof planet === "string"
+                ? planet
+                : `${planet.name || planet.planet_name || planet.full_name || "Planet"}${
+                    planet.isRetro || planet.is_retro || planet.retrograde
+                      ? "*"
+                      : ""
+                  }`
+            )
+            .join(", ")
+        : "Empty";
+
+    const sign = data?.currentSign || data?.current_sign || "—";
+
+    return `House ${house} (Sign ${sign}): ${planetNames}`;
+  })
   .join("\n")}
 
 Planetary positions:
