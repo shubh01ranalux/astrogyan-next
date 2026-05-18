@@ -266,9 +266,8 @@ export default function KundaliBasicReportClient() {
               Calculation Method
             </p>
             <p className="mt-3 leading-7 text-[#5C3A57]">
-              This tool uses FreeAstroAPI Vedic chart data with birth date,
-              birth time, birthplace coordinates and Lahiri ayanamsha. Gemini
-              AI then creates a personalised interpretation from the exact chart
+              This tool uses automated Vedic chart data with birth date,
+              birth time, birthplace coordinates and Lahiri ayanamsha. Our AI then creates a personalised interpretation from the exact chart
               placements.
             </p>
           </div>
