@@ -9,7 +9,7 @@ export default async function PujaServicesPage() {
   const pujas = await getPujaServices();
 
   return (
-    <main className="min-h-screen overflow-x-hidden">
+    <main className="flex h-full flex-col justify-between">
       <Navbar />
 
       <PageHero
@@ -72,26 +72,36 @@ export default async function PujaServicesPage() {
                     </p>
                   )}
 
-                  <div className="mt-6 flex items-center justify-between border-t border-[#E6C89C]/40 pt-5">
-                    <div>
-                      <p className="text-2xl font-semibold text-[#5C3A57]">
-                        ₹{puja.cost_without_samagri || puja.price || 0}
-                      </p>
+                  <div className="mt-6 flex items-end justify-between gap-4 border-t border-[#E6C89C]/40 pt-5">
+  <div>
+    <p className="font-display text-5xl leading-none text-[#5C3A57]">
+      ₹{puja.cost_without_samagri || puja.price}
+    </p>
 
-                      <div className="mt-1 space-y-1">
-  <p className="text-sm text-[#B784A7]">
-    Without Samagri: ₹{puja.cost_without_samagri || puja.price || 0}
-  </p>
+    <div className="mt-3 space-y-1 text-sm leading-6 text-[#B784A7]">
+      <p>
+        Without Samagri: ₹
+        {puja.cost_without_samagri || puja.price}
+      </p>
 
-  <p className="text-sm text-[#B784A7]">
-    With Samagri: ₹{puja.cost_with_samagri || puja.price || 0}
-  </p>
-</div></div>
-                    </div>
+      <p>
+        With Samagri: ₹
+        {puja.cost_with_samagri || puja.price}
+      </p>
 
-                    <Link href={`/book-puja?service=${puja.slug}`}>
-                      <Button>Book Puja</Button>
-                    </Link>
+      {puja.duration && (
+        <p className="pt-1 text-[#6F5B69]">
+          Duration: {puja.duration}
+        </p>
+      )}
+    </div>
+  </div>
+
+  <Link
+    href={`/book-puja?service=${puja.slug}`}>
+    <Button>Book Puja</Button>
+  </Link>
+</div>
                   </div>
                 </div>
               ))}
